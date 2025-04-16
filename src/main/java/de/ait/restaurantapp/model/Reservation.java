@@ -34,6 +34,9 @@ public class Reservation {
     @Column(nullable = false)
     private LocalDateTime startDateTime;
 
+   // @Column(nullable = false)
+    //private LocalDateTime endDateTime;
+
     @Column(nullable = false)
     private String customerName;
 
