@@ -8,7 +8,7 @@ public interface ReservationService {
 
     Reservation createReservation(String customerName, String customerEmail, int guestNumber,
 
-                                  LocalDateTime startDateTime, LocalDateTime endDateTime);
+                                  LocalDateTime startDateTime);
 
     List<Reservation> getAllReservations();
 

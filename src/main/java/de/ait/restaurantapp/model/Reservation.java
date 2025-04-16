@@ -34,8 +34,8 @@ public class Reservation {
     @Column(nullable = false)
     private LocalDateTime startDateTime;
 
-   // @Column(nullable = false)
-    //private LocalDateTime endDateTime;
+    @Column(nullable = false)
+    private LocalDateTime endDateTime;
 
     @Column(nullable = false)
     private String customerName;
@@ -47,8 +47,7 @@ public class Reservation {
     private int guestNumber;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "restaurant_table_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "restaurant_table_id", nullable = false)
     private RestaurantTable restaurantTable;
 
     @Enumerated(EnumType.STRING)

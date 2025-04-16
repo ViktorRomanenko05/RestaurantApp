@@ -5,8 +5,8 @@ import de.ait.restaurantapp.enums.ReservationStatus;
 import de.ait.restaurantapp.model.Reservation;
 import de.ait.restaurantapp.model.RestaurantTable;
 
-import de.ait.restaurantapp.repositories.ReservationRepos;
-import de.ait.restaurantapp.repositories.RestaurantTableRepository;
+import de.ait.restaurantapp.repositories.ReservationRepo;
+import de.ait.restaurantapp.repositories.RestaurantTableRepo;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,17 +18,16 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-
 public class ReservationServiceImpl implements ReservationService {
-    private final ReservationRepos reservationRepos;
-    private final RestaurantTableRepository tableRepository;
+    private final ReservationRepo reservationRepos;
+    private final RestaurantTableRepo tableRepository;
 
     @Override
     public Reservation createReservation(String customerName, String customerEmail, int guestNumber,
                                          LocalDateTime startDateTime) {
         //+2H
         LocalDateTime endDateTime = startDateTime.plusHours(2);
-    }{
+
         //choose all Tables >=Guest numb.
         List<RestaurantTable> availableTables = tableRepository.findAll().stream()
                 .filter(t -> t.getCapacity() >= guestNumber)
@@ -58,7 +57,9 @@ public class ReservationServiceImpl implements ReservationService {
             }
         }
         throw new RuntimeException("There are no tables available for the number of guests for this time.");
-    }@Override
+    }
+
+    @Override
     public List<Reservation> getAllReservations() {
         return reservationRepos.findAll();
     }
@@ -71,3 +72,4 @@ public class ReservationServiceImpl implements ReservationService {
             reservationRepos.save(reservation);
         });
     }
+}
