@@ -34,6 +34,7 @@
         <logback-classic.version>1.5.17</logback-classic.version>
         <springdoc.version>2.3.0</springdoc.version>
         <liquibase.version>4.31.1</liquibase.version>
+        <liquibase-maven-plugin.version>4.31.1</liquibase-maven-plugin.version>
         <postgres.version>42.7.5</postgres.version>
     </properties>
     <dependencies>
@@ -140,6 +141,19 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>${liquibase-maven-plugin.version}</version>
+                <configuration>
+                    <changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
+                    <url>jdbc:postgresql://localhost:5432/restaurantdb</url>
+                    <username>postgres</username>
+                    <password>1111</password>
+                    <driver>org.postgresql.Driver</driver>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
