@@ -23,7 +23,7 @@ public class EmailService {
     public void sendHTMLEmail(EmailDto dto) throws MessagingException {
         Context context = new Context();
         context.setVariable("name", dto.getName());
-        context.setVariable("reservationId", dto.getReservationId());
+        context.setVariable("reservationCode", dto.getReservationCode());
 
         String html = templateEngine.process("email-template", context);
 
