@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Отмена Резервации Столика</title>
+</head>
+<body>
+<p th:text="${message}"></p>
+<form th:action="@{/restaurant/cancel}" method="post">
+    <div>
+    <label>Введите код брони:</label>
+    <input type="text" name="reservationId" placeholder="Введите код из Email" required>
+    </div>
+    <div>
+    <button type="submit">Отменить</button>
+    </div>
+</form>
+<div>
+    <a th:href="@{/restaurant}">Вернуться на Главную Страницу</a>
+</div>
+</body>
+</html>
