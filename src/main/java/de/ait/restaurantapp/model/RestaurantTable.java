@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class RestaurantTable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @NotNull(message = "Table type is required")

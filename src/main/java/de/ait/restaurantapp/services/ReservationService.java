@@ -7,7 +7,13 @@ import java.util.List;
 
 public interface ReservationService {
 
-    Reservation createReservation(ReservationForm form);  // <-- poprawione
+
+
+
+    Reservation createReservation(String customerName, String customerEmail, int guestNumber,
+
+                                  LocalDateTime startDateTime);
+
 
     List<Reservation> getAllReservations();
 

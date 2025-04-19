@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 @Repository
 
-public interface ReservationRepos extends JpaRepository<Reservation, Long> {
+public interface ReservationRepo extends JpaRepository<Reservation, Long> {
 
     //looking for reservation for exact  table, time overlapping
     List<Reservation> findByRestaurantTable_IdAndReservationStatusAndStartDateTimeLessThanAndEndDateTimeGreaterThan(

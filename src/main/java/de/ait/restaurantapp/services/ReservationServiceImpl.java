@@ -4,8 +4,12 @@ import de.ait.restaurantapp.dto.ReservationForm;
 import de.ait.restaurantapp.enums.ReservationStatus;
 import de.ait.restaurantapp.model.Reservation;
 import de.ait.restaurantapp.model.RestaurantTable;
-import de.ait.restaurantapp.repositories.ReservationRepos;
-import de.ait.restaurantapp.repositories.RestaurantTableRepository;
+
+
+import de.ait.restaurantapp.repositories.ReservationRepo;
+import de.ait.restaurantapp.repositories.RestaurantTableRepo;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import de.ait.restaurantapp.utility.ResIDGenerator;
@@ -18,14 +22,17 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
+    private final ReservationRepo reservationRepos;
+    private final RestaurantTableRepo tableRepository;
 
-    private final ReservationRepos reservationRepos;
-    private final RestaurantTableRepository tableRepository;
 
     @Override
     public Reservation createReservation(ReservationForm form) {
         LocalDateTime startDateTime = form.getStartDateTime();
         LocalDateTime endDateTime = startDateTime.plusHours(2);
+
+
+        //choose all Tables >=Guest numb.
 
         List<RestaurantTable> availableTables = tableRepository.findAll().stream()
                 .filter(t -> t.getCapacity() >= form.getGuestNumber())
@@ -56,7 +63,9 @@ public class ReservationServiceImpl implements ReservationService {
             }
         }
 
-        throw new RuntimeException("There are no tables available for the number of guests and time selected.");
+       
+        throw new RuntimeException("There are no tables available for the number of guests for this time.");
+
     }
 
     @Override
@@ -73,3 +82,4 @@ public class ReservationServiceImpl implements ReservationService {
         });
     }
 }
+
