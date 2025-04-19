@@ -1,13 +1,12 @@
 package de.ait.restaurantapp.services;
 
+import de.ait.restaurantapp.dto.ReservationFormDto;
 import de.ait.restaurantapp.enums.ReservationStatus;
-
 import de.ait.restaurantapp.model.Reservation;
 import de.ait.restaurantapp.model.RestaurantTable;
-
 import de.ait.restaurantapp.repositories.ReservationRepo;
 import de.ait.restaurantapp.repositories.RestaurantTableRepo;
-
+import de.ait.restaurantapp.utils.ReservationIDGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,18 +22,17 @@ public class ReservationServiceImpl implements ReservationService {
     private final RestaurantTableRepo tableRepository;
 
     @Override
-    public Reservation createReservation(String customerName, String customerEmail, int guestNumber,
-                                         LocalDateTime startDateTime) {
-        //+2H
-        LocalDateTime endDateTime = startDateTime.plusHours(2);
+    public Reservation createReservation(ReservationFormDto form) {
+
+        LocalDateTime startDateTime = form.getStartDateTime();
+        LocalDateTime endDateTime = form.getEndDateTime();
 
         //choose all Tables >=Guest numb.
         List<RestaurantTable> availableTables = tableRepository.findAll().stream()
-                .filter(t -> t.getCapacity() >= guestNumber)
-                .sorted(Comparator.comparingInt(RestaurantTable::getCapacity)) // first<!!!
+                .filter(t -> t.getCapacity() >= form.getGuestNumber())
+                .sorted(Comparator.comparingInt(RestaurantTable::getCapacity))
                 .toList();
 
-        //time/availability checking
         for (RestaurantTable table : availableTables) {
             boolean hasConflict = reservationRepos
                     .findByRestaurantTable_IdAndReservationStatusAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
@@ -42,15 +40,18 @@ public class ReservationServiceImpl implements ReservationService {
                     ).size() > 0;
 
             if (!hasConflict) {
-                // reservation
+                String reservationCode = ReservationIDGenerator.generateReservationId();
+
                 Reservation reservation = Reservation.builder()
-                        .customerName(customerName)
-                        .customerEmail(customerEmail)
-                        .guestNumber(guestNumber)
+                        .reservationCode(reservationCode)
+                        .customerName(form.getCustomerName())
+                        .customerEmail(form.getCustomerEmail())
+                        .guestCount(form.getGuestNumber())
                         .startDateTime(startDateTime)
-                        .restaurantTable(table)
                         .endDateTime(endDateTime)
+                        .restaurantTable(table)
                         .reservationStatus(ReservationStatus.CONFIRMED)
+                        // todo isAdmin() true or false
                         .build();
 
                 return reservationRepos.save(reservation);
@@ -65,8 +66,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public void cancelReservation(Long reservationId) {
-        Optional<Reservation> reservationOpt = reservationRepos.findById(reservationId);
+    public void cancelReservation(String reservationCode) {
+        Optional<Reservation> reservationOpt = reservationRepos.findByReservationCode(reservationCode);
         reservationOpt.ifPresent(reservation -> {
             reservation.setReservationStatus(ReservationStatus.CANCELED);
             reservationRepos.save(reservation);
