@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EmailDto {
     private String to;
-    private Long restaurantId;
+    private Long reservationId;
     private String name;
 
     private final String subject = "Подтверждение брони";
 
     public EmailDto(String to, Long restaurantId, String name) {
         this.to = to;
-        this.restaurantId = restaurantId;
+        this.reservationId = restaurantId;
         this.name = name;
     }
 }
