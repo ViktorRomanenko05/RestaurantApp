@@ -1,6 +1,6 @@
 package de.ait.restaurantapp.controller;
 
-import de.ait.restaurantapp.dto.ReservationForm;
+import de.ait.restaurantapp.dto.ReservationFormDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,7 @@ public class RestaurantPageController {
 
     @GetMapping("/reserve")
     public String showReservationPage(Model model){
-        model.addAttribute("reservationForm", new ReservationForm());
+        model.addAttribute("reservationForm", new ReservationFormDto());
         return "reservation-form";
     }
 
