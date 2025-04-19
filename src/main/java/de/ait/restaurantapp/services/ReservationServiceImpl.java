@@ -1,18 +1,15 @@
 package de.ait.restaurantapp.services;
 
-import de.ait.restaurantapp.dto.ReservationForm;
 import de.ait.restaurantapp.enums.ReservationStatus;
+
 import de.ait.restaurantapp.model.Reservation;
 import de.ait.restaurantapp.model.RestaurantTable;
-
 
 import de.ait.restaurantapp.repositories.ReservationRepo;
 import de.ait.restaurantapp.repositories.RestaurantTableRepo;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import de.ait.restaurantapp.utility.ResIDGenerator;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -25,20 +22,19 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepo reservationRepos;
     private final RestaurantTableRepo tableRepository;
 
-
     @Override
-    public Reservation createReservation(ReservationForm form) {
-        LocalDateTime startDateTime = form.getStartDateTime();
+    public Reservation createReservation(String customerName, String customerEmail, int guestNumber,
+                                         LocalDateTime startDateTime) {
+        //+2H
         LocalDateTime endDateTime = startDateTime.plusHours(2);
 
-
         //choose all Tables >=Guest numb.
-
         List<RestaurantTable> availableTables = tableRepository.findAll().stream()
-                .filter(t -> t.getCapacity() >= form.getGuestNumber())
-                .sorted(Comparator.comparingInt(RestaurantTable::getCapacity))
+                .filter(t -> t.getCapacity() >= guestNumber)
+                .sorted(Comparator.comparingInt(RestaurantTable::getCapacity)) // first<!!!
                 .toList();
 
+        //time/availability checking
         for (RestaurantTable table : availableTables) {
             boolean hasConflict = reservationRepos
                     .findByRestaurantTable_IdAndReservationStatusAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
@@ -46,26 +42,21 @@ public class ReservationServiceImpl implements ReservationService {
                     ).size() > 0;
 
             if (!hasConflict) {
-
-                String reservationId = ReservationIdGenerator.generateReservationId();
-
+                // reservation
                 Reservation reservation = Reservation.builder()
-                        .customerName(form.getCustomerName())
-                        .customerEmail(form.getCustomerEmail())
-                        .guestNumber(form.getGuestNumber())
+                        .customerName(customerName)
+                        .customerEmail(customerEmail)
+                        .guestNumber(guestNumber)
                         .startDateTime(startDateTime)
-                        .endDateTime(endDateTime)
                         .restaurantTable(table)
+                        .endDateTime(endDateTime)
                         .reservationStatus(ReservationStatus.CONFIRMED)
                         .build();
 
                 return reservationRepos.save(reservation);
             }
         }
-
-       
         throw new RuntimeException("There are no tables available for the number of guests for this time.");
-
     }
 
     @Override
@@ -82,4 +73,3 @@ public class ReservationServiceImpl implements ReservationService {
         });
     }
 }
-

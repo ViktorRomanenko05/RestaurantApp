@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 public class Reservation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     @Column(nullable = false)
     private LocalDateTime startDateTime;
