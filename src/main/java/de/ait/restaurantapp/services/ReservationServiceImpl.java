@@ -1,5 +1,6 @@
 package de.ait.restaurantapp.services;
 
+import de.ait.restaurantapp.dto.EmailDto;
 import de.ait.restaurantapp.dto.ReservationFormDto;
 import de.ait.restaurantapp.enums.ReservationStatus;
 import de.ait.restaurantapp.model.Reservation;
@@ -7,6 +8,7 @@ import de.ait.restaurantapp.model.RestaurantTable;
 import de.ait.restaurantapp.repositories.ReservationRepo;
 import de.ait.restaurantapp.repositories.RestaurantTableRepo;
 import de.ait.restaurantapp.utils.ReservationIDGenerator;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +22,10 @@ import java.util.Optional;
 public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepo reservationRepos;
     private final RestaurantTableRepo tableRepository;
+    private final EmailService emailService;
 
     @Override
-    public Reservation createReservation(ReservationFormDto form) {
+    public Reservation createReservation(ReservationFormDto form) throws MessagingException {
 
         LocalDateTime startDateTime = form.getStartDateTime();
         LocalDateTime endDateTime = form.getEndDateTime();
@@ -53,7 +56,13 @@ public class ReservationServiceImpl implements ReservationService {
                         .reservationStatus(ReservationStatus.CONFIRMED)
                         // todo isAdmin() true or false
                         .build();
+                // Инжектировал метод отправки Email
+                EmailDto emailClientDto = new EmailDto();
+                emailClientDto.setTo(form.getCustomerEmail());
+                emailClientDto.setName(form.getCustomerName());
+                emailClientDto.setReservationCode(reservationCode);
 
+                emailService.sendHTMLEmail(emailClientDto);
                 return reservationRepos.save(reservation);
             }
         }
