@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Бронь Столика</title>
+</head>
+<body>
+<div th:if="${message}">
+    <p th:text="${message}"></p>
+</div>
+<form th:action="@{/restaurant/reserve}" th:object="${reservationForm}" method="post">
+    <div>
+        <label>Имя, Фамилия:</label>
+        <input type="text" th:field="*{customerName}" required/><br/>
+
+        <label>Email:</label>
+        <input type="email" th:field="*{customerEmail}" required/><br/>
+
+        <label>Количество гостей:</label>
+        <input type="number" th:field="*{guestNumber}" min="1" required/><br/>
+
+        <label>Дата и Время начала:</label>
+        <input type="datetime-local" th:field="*{startDateTime}" required/><br/>
+
+        <label>Дата и Время окончания:</label>
+        <input type="datetime-local" th:field="*{endDateTime}" required/><br/>
+    </div>
+    <div>
+        <button type="submit">Забронировать</button>
+    </div>
+</form>
+<div>
+    <a th:href="@{/restaurant}">Вернуться на Главную Страницу</a>
+</div>
+</body>
+</html>

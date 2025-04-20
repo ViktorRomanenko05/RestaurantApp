@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 // do we use List or ...DB???!!!
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 
 public interface ReservationRepo extends JpaRepository<Reservation, Long> {
@@ -21,4 +23,6 @@ public interface ReservationRepo extends JpaRepository<Reservation, Long> {
             LocalDateTime end,
             LocalDateTime start
     );
+
+    Optional<Reservation> findByReservationCode(String reservationCode);
 }

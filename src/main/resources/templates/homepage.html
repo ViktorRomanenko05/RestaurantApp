@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Главная | Ресторан</title>
+</head>
+<body>
+<h1>Добро пожаловать в наш ресторан!</h1>
+<div>
+    <a th:href="@{/restaurant/admin}">Панель администратора</a><br/>
+    <a th:href="@{/restaurant/reserve}">Забронировать столик</a><br/>
+    <a th:href="@{/restaurant/cancel}">Отменить бронирование</a>
+</div>
+</body>
+</html>
