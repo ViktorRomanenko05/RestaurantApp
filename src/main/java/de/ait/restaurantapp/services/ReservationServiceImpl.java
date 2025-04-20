@@ -13,8 +13,10 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -30,13 +32,14 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
 
-    private final ReservationRepo reservationRepo;           // Переименовано из reservationRepos для однородности
+    private final ReservationRepo reservationRepo;           // Репозиторий для резерваций
     private final RestaurantTableRepo tableRepository;
     private final EmailService emailService;
 
     /**
      * Создает новое резервирование на основе данных из формы.
-     * Добавлена валидация входных данных и более точные исключения.
+     * Добавлена валидация входных данных, установка флага isAdmin
+     * и более точные исключения.
      */
     @Override
     @Transactional
@@ -52,6 +55,11 @@ public class ReservationServiceImpl implements ReservationService {
         if (startDateTime.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Start date/time must be in the future");
         }
+
+        // --- Определяем, создал ли текущий пользователь как админ ---
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         // --- Поиск подходящих столиков по вместимости ---
         List<RestaurantTable> availableTables = tableRepository.findAll().stream()
@@ -73,7 +81,7 @@ public class ReservationServiceImpl implements ReservationService {
                     .isPresent();
 
             if (!hasConflict) {
-                // Генерация кода и создание сущности
+                // Генерация кода и создание сущности с указанием isAdmin
                 String reservationCode = ReservationIDGenerator.generateReservationId();
                 Reservation reservation = Reservation.builder()
                         .reservationCode(reservationCode)
@@ -84,6 +92,7 @@ public class ReservationServiceImpl implements ReservationService {
                         .endDateTime(endDateTime)
                         .restaurantTable(table)
                         .reservationStatus(ReservationStatus.CONFIRMED)
+                        .isAdmin(isAdmin)        // устанавливаем флаг
                         .build();
 
                 // Сохраняем в БД до отправки письма
@@ -109,6 +118,24 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<Reservation> getAllReservations() {
         return reservationRepo.findAll();
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Reservation> getReservationsForTableToday(Integer tableId) {
+        // 1) Определяем границы «сегодня»
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime startOfNextDay = today.plusDays(1).atStartOfDay();
+
+        // 2) Делаем запрос через репозиторий
+        return reservationRepo
+                .findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThan(
+                        tableId,
+                        startOfDay,
+                        startOfNextDay
+                );
     }
 
     @Override
