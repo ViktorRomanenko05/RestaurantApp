@@ -11,8 +11,11 @@ public interface ReservationService {
 
     List<Reservation> getAllReservations();
 
+
+    boolean cancelReservation(String reservationCode);
+
     List<Reservation> getReservationsForTableToday(Integer tableId);
 
 
-    void cancelReservation(String reservationCode);
+    
 }

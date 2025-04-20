@@ -234,7 +234,9 @@
         <img class="table-reservation__img" src="https://i.postimg.cc/0QJQ4JWj/dishes.avif"
              alt="some image">
         <form class="table-reservation__form form"
-              action="@{/restaurant/reserve}"
+ feature/email
+              th:action="@{/restaurant/reserve}"
+
               th:object="${reservationForm}"
               method="post">
             <div class="form__data-container">
