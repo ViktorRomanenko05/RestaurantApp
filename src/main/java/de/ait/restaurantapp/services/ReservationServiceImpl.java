@@ -112,11 +112,13 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public void cancelReservation(String reservationCode) {
-        reservationRepo.findByReservationCode(reservationCode)
-                .ifPresent(reservation -> {
+    public boolean cancelReservation(String reservationCode) {
+       return reservationRepo.findByReservationCode(reservationCode)
+                .map(reservation -> {
                     reservation.setReservationStatus(ReservationStatus.CANCELED);
                     reservationRepo.save(reservation);
-                });
+                    return true;
+                })
+               .orElse(false);
     }
 }

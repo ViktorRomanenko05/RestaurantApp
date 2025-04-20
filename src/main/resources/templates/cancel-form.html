@@ -249,8 +249,8 @@
                 <div class="form__group">
                     <label for="name" class="form__label">Введите код брони
                     </label>
-                    <input class="form__input" id="name" type="text"
-                           name="reservationId" placeholder="Введите код из Email"
+                    <input class="form__input" id="name" type="text" th:value="${reservationCode}"
+                           name="reservationCode" placeholder="Введите код из Email"
                            required>
                 </div>
             </div>

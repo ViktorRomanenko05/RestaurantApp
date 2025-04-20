@@ -11,5 +11,5 @@ public interface ReservationService {
 
     List<Reservation> getAllReservations();
 
-    void cancelReservation(String reservationCode);
+    boolean cancelReservation(String reservationCode);
 }
