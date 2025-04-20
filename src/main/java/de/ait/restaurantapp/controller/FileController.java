@@ -29,7 +29,7 @@ public class FileController {
     // метод для показа формы загрузки
     @GetMapping("upload")
     public String showUploadForm(Model model){
-        return "uploadForm";
+        return "upload-form";
     }
 
 
@@ -38,7 +38,7 @@ public class FileController {
     public String listFiles(Model model) {
         List<FileEntity> files = fileService.getAllFiles();
         model.addAttribute("files", files);
-        return "fileList";
+        return "file-list";
     }
 
     // загрузка файла
@@ -46,17 +46,17 @@ public class FileController {
     public String handleFileUpload(@RequestParam("file") MultipartFile file, Model model){
         if (file.isEmpty()){
             model.addAttribute("message", "Файл для загрузки не выбран");
-            return "uploadForm";
+            return "upload-form";
         }
         FileEntity savedFile = fileService.saveFile(file);
         if (savedFile == null){
             model.addAttribute("message", "Ошибка при загрузке файла");
-            return "uploadForm";
+            return "upload-form";
         }
         else {
             model.addAttribute("message", "Файл успешно загружен");
             model.addAttribute("fileId", savedFile.getId());
-            return "uploadForm";
+            return "upload-form";
         }
     }
 
