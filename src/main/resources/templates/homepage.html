@@ -162,8 +162,40 @@
             background: #E6D7C4;
         }
 
+
+        .page__menu-img {
+            display: flex;
+            align-items: center;
+        }
+
+        .page__menu-container {
+            max-width: 250px;
+        }
+
+        .page__menu-link {
+            padding: 20px;
+            border: 2px solid #D5CCBA;
+            border-radius: 10px;
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+            letter-spacing: 3px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            color: #443A36;
+            background: #E6D7C4;
+        }
+
+        .page__menu-link:hover {
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
+        }
+
+        .page__menu-text {
+            font-size: 20px;
+            text-align: center;
+            font-family: "Lobster", serif;
+        }
+
         .page__img-container {
-            max-width: 800px;
+            max-width: 600px;
+
             width: 100%;
             align-self: left;
         }
@@ -206,9 +238,20 @@
                 <h2 class="page__title">Ощутите изысканный вкус и атмосферу <br>уюта
                     в
                     нашем ресторане</h2>
-                <div class="page__img-container">
-                    <img src="https://i.postimg.cc/mkS9D4ht/foto-1.avif" alt="banner"
-                         class="page__img">
+              
+                <div class="page__menu-img">
+                    <div class="page__menu-container">
+                        <a class="page__menu-link" href="">
+                            <img class="page__menu-img" src="https://i.postimg.cc/rpSxb5c1/menu.png"
+                                 alt="Menu to download">
+                            <p class="page__menu-text">Скачать Меню (PDF)</p>
+                        </a>
+                    </div>
+                    <div class="page__img-container">
+                        <img src="https://i.postimg.cc/mkS9D4ht/foto-1.avif" alt="banner"
+                             class="page__img">
+                    </div>
+
                 </div>
             </div>
         </div>

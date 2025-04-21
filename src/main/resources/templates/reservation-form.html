@@ -234,7 +234,9 @@
         <img class="table-reservation__img" src="https://i.postimg.cc/0QJQ4JWj/dishes.avif"
              alt="some image">
         <form class="table-reservation__form form"
-              action="@{/restaurant/reserve}"
+ feature/email
+              th:action="@{/restaurant/reserve}"
+
               th:object="${reservationForm}"
               method="post">
             <div class="form__data-container">
@@ -268,10 +270,10 @@
                 </div>
                 <div class="form__group">
                     <label for="endDateTime" class="form__label">
-                        Дата и Время окончания
+                        Время окончания
                     </label>
-                    <input class="form__input" id="endDateTime" type="datetime-local"
-                           th:field="*{endDateTime}" required>
+                    <input class="form__input" id="endDateTime" type="time"
+                           th:field="*{endTime}" required>
                 </div>
             </div>
             <button class="form__submit-btn" type="submit">Забронировать</button>

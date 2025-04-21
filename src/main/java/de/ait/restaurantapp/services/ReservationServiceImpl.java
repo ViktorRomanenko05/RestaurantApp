@@ -50,7 +50,9 @@ public class ReservationServiceImpl implements ReservationService {
         log.debug("Creating reservation - start | form: guestCount={}, timeRange={} to {}", form.getGuestNumber(), form.getStartDateTime(), form.getEndDateTime());
         Objects.requireNonNull(form, "ReservationFormDto must not be null");
         LocalDateTime startDateTime = Objects.requireNonNull(form.getStartDateTime(), "startDateTime must not be null");
-        LocalDateTime endDateTime = Objects.requireNonNull(form.getEndDateTime(), "endDateTime must not be null");
+        LocalTime endTime = Objects.requireNonNull(form.getEndTime(), "endTime must not be null");
+        LocalDate endDate = startDateTime.toLocalDate();
+        LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
 
         if (!startDateTime.isBefore(endDateTime)) {
             log.warn("Start date/time must be before end date/time | SDT: {}, EDT: {}", startDateTime, endDateTime);
@@ -59,6 +61,31 @@ public class ReservationServiceImpl implements ReservationService {
         if (startDateTime.isBefore(LocalDateTime.now())) {
             log.warn("Start date/time must be in the future | SDT: {}, EDT: {}", startDateTime, endDateTime);
             throw new IllegalArgumentException("Start date/time must be in the future");
+        }
+
+        // --- Ограничение: не более одной резервации в один день на один email ---
+        LocalDate reservationDate = startDateTime.toLocalDate();
+        boolean alreadyHasBooking = reservationRepo.findAll().stream()
+                .filter(r -> r.getCustomerEmail().equals(form.getCustomerEmail()))
+                .anyMatch(r -> r.getStartDateTime().toLocalDate().isEqual(reservationDate));
+        if (alreadyHasBooking) {
+            throw new IllegalArgumentException(
+                    "Email " + form.getCustomerEmail() +
+                            " already has a reservation on " + reservationDate
+            );
+        }
+        // ---------------------------------------------------------------
+
+        // --- Ограничение по времени работы ресторана: только с 08:00 до 20:00 ---
+        LocalTime openingTime = LocalTime.of(8, 0);
+        LocalTime closingTime = LocalTime.of(20, 0);
+        LocalTime startTime = startDateTime.toLocalTime();
+        //LocalTime endTime     = endDateTime.toLocalTime();
+        if (startTime.isBefore(openingTime) || endTime.isAfter(closingTime)) {
+            throw new IllegalArgumentException(
+                    "Reservations are only allowed between " +
+                            openingTime + " and " + closingTime
+            );
         }
 
         // --- Определяем, создал ли текущий пользователь как админ ---
@@ -73,7 +100,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .sorted(Comparator.comparingInt(RestaurantTable::getCapacity))
                 .toList();
 
-        if(availableTables.isEmpty()) {
+        if (availableTables.isEmpty()) {
             log.warn("No tables available | guests: {}, time: {}", form.getGuestNumber(), form.getStartDateTime());
             throw new NoAvailableTableException();
         }
@@ -103,7 +130,7 @@ public class ReservationServiceImpl implements ReservationService {
                         .endDateTime(endDateTime)
                         .restaurantTable(table)
                         .reservationStatus(ReservationStatus.CONFIRMED)
-                        .isAdmin(isAdmin)        // устанавливаем флаг
+                        .isAdmin(isAdmin)
                         .build();
                 log.debug("Saving reservation: {}", reservation);
 
@@ -137,12 +164,10 @@ public class ReservationServiceImpl implements ReservationService {
         return reservations;
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<Reservation> getReservationsForTableToday(Integer tableId) {
         log.debug("Fetching today's reservations for table {}", tableId);
-        // 1) Определяем границы «сегодня»
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime startOfNextDay = today.plusDays(1).atStartOfDay();
@@ -154,7 +179,7 @@ public class ReservationServiceImpl implements ReservationService {
                         startOfDay,
                         startOfNextDay
                 );
-        if(reservations.isEmpty()) {
+        if (reservations.isEmpty()) {
             log.info("No reservations found for table {} today.", tableId);
         } else {
             log.debug("Found {} reservations for table {} today", reservations.size(), tableId);
@@ -163,13 +188,18 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public void cancelReservation(String reservationCode) {
+    public boolean cancelReservation(String reservationCode) {
         log.debug("Attempting to cancel a reservation by code: {}", reservationCode);
-        reservationRepo.findByReservationCode(reservationCode)
-                .ifPresentOrElse(reservation -> {
+        return reservationRepo.findByReservationCode(reservationCode)
+                .map(reservation -> {
                     reservation.setReservationStatus(ReservationStatus.CANCELED);
                     reservationRepo.save(reservation);
                     log.info("Reservation(id:{}) CANCELED.", reservation.getId());
-                }, () -> log.warn("Cancel failed - reservation not found"));
+                    return true;
+                })
+                .orElseGet(() -> {
+                    log.warn("Cancel failed - reservation not found");
+                    return false;
+                });
     }
 }

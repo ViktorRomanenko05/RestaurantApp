@@ -71,6 +71,7 @@
         }
 
         .table-cansellation {
+            position: relative;
             background: linear-gradient(0deg, rgba(175, 145, 145, 0.16) 0%, rgba(175, 145, 145, 0.16) 100%), #E8D7B7;
             display: flex;
             flex-direction: column;
@@ -81,7 +82,28 @@
             background-color: #f0e8dc;
             border: 2px solid #D5CCBA;
             border-radius: 10px;
+        }
 
+        .message:has(.message__test:not(:empty)) {
+            display: block;
+        }
+
+        .message:has(.message__test:empty) {
+            display: none;
+        }
+
+        .message__test {
+            position: absolute;
+            top: 50px;
+            bottom: 50px;
+            right: 20px;
+            left: 20px;
+            background-color: #f0e8dc;
+            text-align: center;
+            line-height: 240px;
+            z-index: 3;
+            font-size: 30px;
+            border-radius: 10px;
         }
 
         .table-cansellation__form {
@@ -161,6 +183,7 @@
             font-size: 20px;
             background-color: #FDFAEF;
             padding: 0 10px;
+
         }
 
         .form__input {
@@ -237,20 +260,26 @@
 </head>
 
 <body>
-<div th:if="${message}">
-    <p th:text="${message}"></p>
-</div>
+<!-- <div th:if="${message}">
+  <p th:text="${message}"></p>
+</div> -->
 <div class="section-cansellation">
     <div class="table-cansellation">
         <h1 class="table-cansellation__title">Отмена Резервации Столика</h1>
+        <!-- <div th:if="${message}">
+          <p th:text="${message}"></p>
+        </div> -->
+        <div th:if="${message}" class="table-cansellation__message message">
+            <p th:text="${message}" class="message__test"></p>
+        </div>
         <form class="table-cansellation__form form"
               th:action="@{/restaurant/cancel}" method="post">
             <div class="form__data-container">
                 <div class="form__group">
                     <label for="name" class="form__label">Введите код брони
                     </label>
-                    <input class="form__input" id="name" type="text"
-                           name="reservationId" placeholder="Введите код из Email"
+                    <input class="form__input" id="name" type="text" th:value="${reservationCode}"
+                           name="reservationCode" placeholder="Введите код из Email"
                            required>
                 </div>
             </div>

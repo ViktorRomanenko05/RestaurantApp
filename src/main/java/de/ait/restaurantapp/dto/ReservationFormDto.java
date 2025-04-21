@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @AllArgsConstructor
@@ -14,5 +15,5 @@ public class ReservationFormDto {
     private String customerEmail;
     private int guestNumber;
     private LocalDateTime startDateTime;
-    private LocalDateTime endDateTime;
+    private LocalTime endTime;
 }
