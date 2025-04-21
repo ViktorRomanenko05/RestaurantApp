@@ -25,12 +25,15 @@ public interface ReservationRepo extends JpaRepository<Reservation, Long> {
     /**
      * Находит все резервации для указанного стола,
      * у которых startDateTime >= from и < to.
+     * и статус CONFIRMED
      */
-    List<Reservation> findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThan(
+    List<Reservation> findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThanAndReservationStatus(
             Integer tableId,
-            LocalDateTime from,
-            LocalDateTime to
+            LocalDateTime start,
+            LocalDateTime end,
+            ReservationStatus reservationStatus
     );
+
 
 
     Optional<Reservation> findByReservationCode(String reservationCode);

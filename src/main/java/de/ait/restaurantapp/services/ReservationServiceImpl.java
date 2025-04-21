@@ -34,13 +34,14 @@ import java.util.Objects;
 @Slf4j
 public class ReservationServiceImpl implements ReservationService {
 
-    private final ReservationRepo reservationRepo;           // Репозиторий для резерваций
+    private final ReservationRepo reservationRepo;
     private final RestaurantTableRepo tableRepository;
     private final EmailService emailService;
 
     /**
      * Создает новое резервирование на основе данных из формы.
-     * Добавлена валидация входных данных, установка флага isAdmin
+     * Добавлена валидация входных данных, установка флага isAdmin,
+     * проверка «не более одной брони в день на один email» (исправлено)
      * и более точные исключения.
      */
     @Override
@@ -79,7 +80,7 @@ public class ReservationServiceImpl implements ReservationService {
         // --- Ограничение по времени работы ресторана: только с 08:00 до 20:00 ---
         LocalTime openingTime = LocalTime.of(8, 0);
         LocalTime closingTime = LocalTime.of(20, 0);
-        LocalTime startTime = startDateTime.toLocalTime();
+        LocalTime startTime   = startDateTime.toLocalTime();
         //LocalTime endTime     = endDateTime.toLocalTime();
         if (startTime.isBefore(openingTime) || endTime.isAfter(closingTime)) {
             throw new IllegalArgumentException(
@@ -169,15 +170,15 @@ public class ReservationServiceImpl implements ReservationService {
     public List<Reservation> getReservationsForTableToday(Integer tableId) {
         log.debug("Fetching today's reservations for table {}", tableId);
         LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime startOfDay     = today.atStartOfDay();
         LocalDateTime startOfNextDay = today.plusDays(1).atStartOfDay();
 
-        // 2) Делаем запрос через репозиторий
         List<Reservation> reservations = reservationRepo
-                .findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThan(
+                .findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThanAndReservationStatus(
                         tableId,
                         startOfDay,
-                        startOfNextDay
+                        startOfNextDay,
+                        ReservationStatus.CONFIRMED
                 );
         if (reservations.isEmpty()) {
             log.info("No reservations found for table {} today.", tableId);
