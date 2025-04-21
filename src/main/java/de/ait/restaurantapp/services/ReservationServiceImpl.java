@@ -156,12 +156,15 @@ public class ReservationServiceImpl implements ReservationService {
         LocalDateTime startOfNextDay = today.plusDays(1).atStartOfDay();
 
         return reservationRepo
-                .findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThan(
+                .findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThanAndReservationStatus(
                         tableId,
                         startOfDay,
-                        startOfNextDay
+                        startOfNextDay,
+                        ReservationStatus.CONFIRMED
                 );
     }
+
+
 
     @Override
     public boolean cancelReservation(String reservationCode) {

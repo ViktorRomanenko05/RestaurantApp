@@ -5,13 +5,13 @@ import de.ait.restaurantapp.exception.NoAvailableTableException;
 import de.ait.restaurantapp.model.Reservation;
 import de.ait.restaurantapp.services.ReservationService;
 import jakarta.mail.MessagingException;
+import org.springframework.http.*;
+import org.springframework.security.access.prepost.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
 
 @Controller
 @RequestMapping("/restaurant")
@@ -75,4 +75,21 @@ public class RestaurantPageController {
     public String showAdminPage() {
         return "admin-form";
     }
+    /**
+     * Возвращает все резервации на сегодняшний день для заданного столика.
+     * Доступно только администратору.
+     *
+     * @param tableId ID столика
+     * @return список резерваций
+     */
+    @GetMapping("/admin/{tableId}/today")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Reservation>> getReservationsForTableToday(
+            @PathVariable Integer tableId
+    ) {
+        List<Reservation> reservations = reservationService.getReservationsForTableToday(tableId);
+        return ResponseEntity.ok(reservations);
+    }
 }
+
+
