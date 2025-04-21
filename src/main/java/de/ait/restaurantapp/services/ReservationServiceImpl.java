@@ -11,6 +11,7 @@ import de.ait.restaurantapp.repositories.RestaurantTableRepo;
 import de.ait.restaurantapp.utils.ReservationIDGenerator;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,7 @@ import java.util.Objects;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepo reservationRepo;           // Репозиторий для резерваций
@@ -45,14 +47,17 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public Reservation createReservation(ReservationFormDto form) throws MessagingException {
         // --- Валидация входных параметров ---
+        log.debug("Creating reservation - start | form: guestCount={}, timeRange={} to {}", form.getGuestNumber(), form.getStartDateTime(), form.getEndDateTime());
         Objects.requireNonNull(form, "ReservationFormDto must not be null");
         LocalDateTime startDateTime = Objects.requireNonNull(form.getStartDateTime(), "startDateTime must not be null");
         LocalDateTime endDateTime = Objects.requireNonNull(form.getEndDateTime(), "endDateTime must not be null");
 
         if (!startDateTime.isBefore(endDateTime)) {
+            log.warn("Start date/time must be before end date/time | SDT: {}, EDT: {}", startDateTime, endDateTime);
             throw new IllegalArgumentException("Start date/time must be before end date/time");
         }
         if (startDateTime.isBefore(LocalDateTime.now())) {
+            log.warn("Start date/time must be in the future | SDT: {}, EDT: {}", startDateTime, endDateTime);
             throw new IllegalArgumentException("Start date/time must be in the future");
         }
 
@@ -60,12 +65,18 @@ public class ReservationServiceImpl implements ReservationService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        log.debug("Is user admin: {}", isAdmin);
 
         // --- Поиск подходящих столиков по вместимости ---
         List<RestaurantTable> availableTables = tableRepository.findAll().stream()
                 .filter(t -> t.getCapacity() >= form.getGuestNumber())
                 .sorted(Comparator.comparingInt(RestaurantTable::getCapacity))
                 .toList();
+
+        if(availableTables.isEmpty()) {
+            log.warn("No tables available | guests: {}, time: {}", form.getGuestNumber(), form.getStartDateTime());
+            throw new NoAvailableTableException();
+        }
 
         // --- Проверка наличия свободного столика по времени ---
         for (RestaurantTable table : availableTables) {
@@ -94,9 +105,11 @@ public class ReservationServiceImpl implements ReservationService {
                         .reservationStatus(ReservationStatus.CONFIRMED)
                         .isAdmin(isAdmin)        // устанавливаем флаг
                         .build();
+                log.debug("Saving reservation: {}", reservation);
 
                 // Сохраняем в БД до отправки письма
                 Reservation saved = reservationRepo.save(reservation);
+                log.info("Reservation created | code: {}, table: {}, customer: {}", reservationCode, table.getId(), form.getCustomerEmail());
 
                 // Отправка email-подтверждения
                 EmailDto emailClientDto = new EmailDto();
@@ -110,6 +123,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         // Бросаем специальное исключение при отсутствии свободных столиков
+        log.warn("No available tables for the specified time and guest count");
         throw new NoAvailableTableException(
                 "No available tables for the specified time and guest count"
         );
@@ -117,33 +131,45 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<Reservation> getAllReservations() {
-        return reservationRepo.findAll();
+        log.debug("Fetching all reservations");
+        List<Reservation> reservations = reservationRepo.findAll();
+        log.debug("Found {} reservations.", reservations.size());
+        return reservations;
     }
 
 
     @Override
     @Transactional(readOnly = true)
     public List<Reservation> getReservationsForTableToday(Integer tableId) {
+        log.debug("Fetching today's reservations for table {}", tableId);
         // 1) Определяем границы «сегодня»
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime startOfNextDay = today.plusDays(1).atStartOfDay();
 
         // 2) Делаем запрос через репозиторий
-        return reservationRepo
+        List<Reservation> reservations = reservationRepo
                 .findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThan(
                         tableId,
                         startOfDay,
                         startOfNextDay
                 );
+        if(reservations.isEmpty()) {
+            log.info("No reservations found for table {} today.", tableId);
+        } else {
+            log.debug("Found {} reservations for table {} today", reservations.size(), tableId);
+        }
+        return reservations;
     }
 
     @Override
     public void cancelReservation(String reservationCode) {
+        log.debug("Attempting to cancel a reservation by code: {}", reservationCode);
         reservationRepo.findByReservationCode(reservationCode)
-                .ifPresent(reservation -> {
+                .ifPresentOrElse(reservation -> {
                     reservation.setReservationStatus(ReservationStatus.CANCELED);
                     reservationRepo.save(reservation);
-                });
+                    log.info("Reservation(id:{}) CANCELED.", reservation.getId());
+                }, () -> log.warn("Cancel failed - reservation not found"));
     }
 }
