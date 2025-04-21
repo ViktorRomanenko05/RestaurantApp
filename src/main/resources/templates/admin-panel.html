@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель Администратора</title>
+</head>
+<body>
+<h1>Панель Администратора</h1>
+
+<!-- Уведомление -->
+<div th:if="${message}">
+    <p th:text="${message}"></p>
+</div>
+
+<!-- Форма загрузки меню -->
+<div>
+    <section>
+        <h2>Загрузить меню (PDF)</h2>
+        <form th:action="@{/restaurant/admin/upload-menu}" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="application/pdf" required>
+            <button type="submit">Загрузить меню</button>
+        </form>
+    </section>
+</div>
+
+<!-- Форма создания резервации -->
+<div>
+    <section>
+        <h2>Создать резервацию</h2>
+        <form th:action="@{/restaurant/admin/reserve}" th:object="${reservationForm}" method="post">
+            <label>Имя клиента: <input type="text" th:field="*{customerName}" required></label><br>
+            <label>Email клиента: <input type="email" th:field="*{customerEmail}" required></label><br>
+            <label>Количество гостей: <input type="number" th:field="*{guestNumber}" min="1" required></label><br>
+            <label>Начало: <input type="datetime-local" th:field="*{startDateTime}" required></label><br>
+            <label>Окончание: <input type="datetime-local" th:field="*{endTime}" required></label><br>
+            <button type="submit">Создать</button>
+        </form>
+    </section>
+</div>
+
+<!-- Форма отмены брони -->
+<div>
+    <section>
+        <h2>Отменить резервацию</h2>
+        <form th:action="@{/restaurant/admin/cancel}" method="post">
+            <label>Код резервации: <input type="text" name="reservationCode" required></label>
+            <button type="submit">Отменить</button>
+        </form>
+    </section>
+</div>
+
+<!-- Список резерваций по дате -->
+<div>
+    <section th:if="${allReservations}">
+        <h2>Резервации на выбранную дату</h2>
+        <ul>
+            <li th:each="res : ${allReservations}">
+            <span th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
+            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
+            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
+            </li>
+        </ul>
+    </section>
+</div>
+<!-- Список резерваций по столику -->
+<div>
+    <section th:if="${tableReservations}">
+        <h2>Резервации по столику</h2>
+        <ul>
+            <li th:each="res : ${tableReservations}">
+            <span th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
+            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
+            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
+            </li>
+        </ul>
+    </section>
+</div>
+
+</body>
+</html>
