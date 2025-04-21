@@ -270,10 +270,10 @@
                 </div>
                 <div class="form__group">
                     <label for="endDateTime" class="form__label">
-                        Дата и Время окончания
+                        Время окончания
                     </label>
-                    <input class="form__input" id="endDateTime" type="datetime-local"
-                           th:field="*{endDateTime}" required>
+                    <input class="form__input" id="endDateTime" type="time"
+                           th:field="*{endTime}" required>
                 </div>
             </div>
             <button class="form__submit-btn" type="submit">Забронировать</button>

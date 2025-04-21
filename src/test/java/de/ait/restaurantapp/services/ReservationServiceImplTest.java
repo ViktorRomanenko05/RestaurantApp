@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -63,64 +64,64 @@ public class ReservationServiceImplTest {
         r1 = new ReservationFormDto(
                 "User1", "u1@example.com", 2,
                 baseDate.atTime(10, 0),
-                baseDate.atTime(12, 0)
+                LocalTime.of(12, 0)
         );
 
         r1sameUser = new ReservationFormDto(
                 "User1", "u1@example.com", 2,
                 baseDate.atTime(18, 0),
-                baseDate.atTime(20, 0)
+                LocalTime.of(20, 0)
         );
         r2 = new ReservationFormDto(
                 "User2", "u2@example.com", 4,
                 baseDate.atTime(11, 0),
-                baseDate.atTime(13, 0)
+                LocalTime.of(13, 0)
         );
         r3 = new ReservationFormDto(
                 "User3", "u3@example.com", 6,
                 baseDate.atTime(14, 0),
-                baseDate.atTime(16, 0)
+                LocalTime.of(16, 0)
         );
 
         // до открытия и пересекает закрытие
         r4 = new ReservationFormDto(
                 "User4", "u4@example.com", 2,
                 baseDate.atTime(7, 0),
-                baseDate.atTime(9, 0)
+                LocalTime.of(9, 0)
         );
         r5 = new ReservationFormDto(
                 "User5", "u5@example.com", 2,
                 baseDate.atTime(19, 0),
-                baseDate.atTime(21, 0)
+                LocalTime.of(21, 0)
         );
 
         // overlap внутри рабочего времени
         r6 = new ReservationFormDto(
                 "User6", "u6@example.com", 3,
                 baseDate.atTime(9, 0),
-                baseDate.atTime(11, 0)
+                LocalTime.of(11, 0)
         );
         r7 = new ReservationFormDto(
                 "User7", "u7@example.com", 4,
                 baseDate.atTime(11, 0),
-                baseDate.atTime(13, 0)
+                LocalTime.of(13, 0)
         );
         r8 = new ReservationFormDto(
                 "User8", "u8@example.com", 2,
                 baseDate.atTime(12, 0),
-                baseDate.atTime(14, 0)
+                LocalTime.of(14, 0)
         );
 
         // граничные часы (открытие и закрытие)
         r9 = new ReservationFormDto(
                 "User9", "u9@example.com", 2,
                 baseDate.atTime(8, 0),
-                baseDate.atTime(10, 0)
+                LocalTime.of(10, 0)
         );
         r10 = new ReservationFormDto(
                 "User10", "u10@example.com", 2,
                 baseDate.atTime(20, 0),
-                baseDate.atTime(22, 0)
+                LocalTime.of(22, 0)
         );
         // старт вчера
         r11 = new ReservationFormDto(
@@ -128,7 +129,7 @@ public class ReservationServiceImplTest {
                 "u11@example.com",
                 2,
                 LocalDate.now().minusDays(1).atTime(10, 0),
-                LocalDate.now().minusDays(1).atTime(12, 0)
+                LocalTime.of(12, 0)
         );
 
         // два валидных бронирования на 9 гостей в рабочие часы
@@ -137,7 +138,7 @@ public class ReservationServiceImplTest {
                 "nineA@example.com",
                 9,
                 baseDate.atTime(10, 0),
-                baseDate.atTime(12, 0)
+                LocalTime.of(12, 0)
         );
 
         r13 = new ReservationFormDto(
@@ -145,7 +146,7 @@ public class ReservationServiceImplTest {
                 "nineB@example.com",
                 9,
                 baseDate.atTime(10, 0),
-                baseDate.atTime(12, 0)
+                LocalTime.of(12, 0)
         );
 
         r14 = new ReservationFormDto(
@@ -153,23 +154,15 @@ public class ReservationServiceImplTest {
                 "tenA@example.com",
                 10,
                 baseDate.atTime(10, 0),
-                baseDate.atTime(12, 0)
+                LocalTime.of(12, 0)
         );
 
-        // бронирование, начинающееся завтра и заканчивающееся послезавтра
-        r15 = new ReservationFormDto(
-                "User15",
-                "span@example.com",
-                3,
-                baseDate.atTime(18, 0),
-                baseDate.plusDays(1).atTime(10, 0)
-        );
 
         //Время начала позже времени окончания
         r16 = new ReservationFormDto(
                 "User16", "u16@example.com", 2,
                 baseDate.atTime(12, 0),
-                baseDate.atTime(10, 0)
+                LocalTime.of(10, 0)
         );
 
     }
@@ -230,12 +223,12 @@ public class ReservationServiceImplTest {
         ReservationFormDto event1 = new ReservationFormDto(
                 "UserToday1", "uto1@example.com", 2,
                 baseDate.atTime(18, 0),
-                baseDate.atTime(19, 0)
+                LocalTime.of(19, 0)
         );
         ReservationFormDto event2 = new ReservationFormDto(
                 "UserToday2", "uto2@example.com", 2,
                 baseDate.atTime(19, 0),
-                baseDate.atTime(20, 0)
+                LocalTime.of(20, 0)
         );
         reservationService.createReservation(event1);
         reservationService.createReservation(event2);
@@ -245,16 +238,6 @@ public class ReservationServiceImplTest {
         assertEquals(2, capacities.get(0));
         assertEquals(2, capacities.get(1));
     }
-
-
-//    //FIX//
-//    @Test
-//    @DisplayName("Start tomorrow, end - aftertomorrow(during the night)")
-//    void reservationMoreThanOneDay() {
-//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r15));
-//        assertEquals(0, reservationRepo.findAll().size());
-//    }
-
 
     @Test
     @DisplayName("Reservation by the same user in one day")
@@ -286,21 +269,21 @@ public class ReservationServiceImplTest {
 
     }
 
-//    //FIX//
-//    @Test
-//    @DisplayName("Overlaps opening and closing time")
-//    void reservationIsTooEarlyAndTooLate() {
-//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r4));
-//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r5));
-//    }
-//
-//    //FIX//
-//    @Test
-//    @DisplayName("Overlaps opening and closing time")
-//    void reservationAfterClosing() {
-//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r10));
-//        assertEquals(0, reservationRepo.findAll().size());
-//    }
+    //FIX//
+    @Test
+    @DisplayName("Overlaps opening and closing time")
+    void reservationIsTooEarlyAndTooLate() {
+        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r4));
+        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r5));
+    }
+
+    //FIX//
+    @Test
+    @DisplayName("Overlaps opening and closing time")
+    void reservationAfterClosing() {
+        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r10));
+        assertEquals(0, reservationRepo.findAll().size());
+    }
 
     @Test
     @DisplayName("Start time after end time")
@@ -341,25 +324,25 @@ public class ReservationServiceImplTest {
         assertEquals(6, sorted.get(2));
     }
 
-//    @Test
-//    @DisplayName("Get reservations for table today")
-//    void getReservationsForTableToday () throws MessagingException {
-//        LocalDate today = LocalDate.now();
-//        ReservationFormDto today1 = new ReservationFormDto(
-//                "UserToday1", "uto1@example.com", 2,
-//                today.atTime(18, 0),
-//                today.atTime(19, 0)
-//        );
-//        ReservationFormDto today2 = new ReservationFormDto(
-//                "UserToday2", "uto2@example.com", 2,
-//                today.atTime(19, 0),
-//                today.atTime(20, 0)
-//        );
-//        int id1 = reservationService.createReservation(today1).getRestaurantTable().getId();
-//        int id2 = reservationService.createReservation(today2).getRestaurantTable().getId();
-//        assertEquals(id1, id2);
-//        assertEquals(2, reservationService.getReservationsForTableToday(id1).size());
-//    }
+    @Test
+    @DisplayName("Get reservations for table today")
+    void getReservationsForTableToday () throws MessagingException {
+        LocalDate today = LocalDate.now();
+        ReservationFormDto today1 = new ReservationFormDto(
+                "UserToday1", "uto1@example.com", 2,
+                today.atTime(18, 0),
+                LocalTime.of(19, 0)
+        );
+        ReservationFormDto today2 = new ReservationFormDto(
+                "UserToday2", "uto2@example.com", 2,
+                today.atTime(19, 0),
+                LocalTime.of(20, 0)
+        );
+        int id1 = reservationService.createReservation(today1).getRestaurantTable().getId();
+        int id2 = reservationService.createReservation(today2).getRestaurantTable().getId();
+        assertEquals(id1, id2);
+        assertEquals(2, reservationService.getReservationsForTableToday(id1).size());
+    }
 
     @Test
     @DisplayName("Cancel reservation test")
@@ -371,12 +354,27 @@ public class ReservationServiceImplTest {
         String codeToSave = reservation2.getReservationCode();
         reservationService.cancelReservation(codeToDelete);
         List<ReservationStatus> statusList = reservationRepo.findAll().stream()
-                .map(reservation -> reservation.getReservationStatus())
+                .map(Reservation::getReservationStatus)
                 .filter(status -> status.equals(ReservationStatus.CANCELED)).toList();
         assertEquals(1, statusList.size());
         assertEquals(ReservationStatus.CANCELED, statusList.get(0));
         assertEquals(codeToSave, reservationRepo.findAll().stream()
                 .filter(reservation -> reservation.getReservationStatus() == ReservationStatus.CONFIRMED)
                 .toList().get(0).getReservationCode());
+    }
+
+    @Test
+    @DisplayName("Cancel reservation negative test")
+    void cancelReservationNegativeTest() throws MessagingException {
+        reservationService.createReservation(r1);
+        reservationService.createReservation(r9);
+        assertEquals(2, reservationRepo.findAll().size());
+        reservationService.cancelReservation("#incorrect_code");
+        List<ReservationStatus> statusList = reservationRepo.findAll().stream()
+                .map(Reservation::getReservationStatus)
+                .filter(status -> status.equals(ReservationStatus.CONFIRMED)).toList();
+        assertEquals(2, statusList.size());
+        assertEquals(ReservationStatus.CONFIRMED, statusList.get(0));
+        assertEquals(ReservationStatus.CONFIRMED, statusList.get(1));
     }
 }
