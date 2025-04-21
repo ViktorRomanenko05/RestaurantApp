@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Controller
@@ -60,9 +61,9 @@ public class RestaurantPageController {
 
     @PostMapping("/cancel")
     public String cancelReservation(@RequestParam String reservationCode, Model model) {
-        boolean success = reservationService.cancelReservation(reservationCode);
+        boolean cancelResult = reservationService.cancelReservation(reservationCode);
 
-        if (success) {
+        if (cancelResult) {
             model.addAttribute("message", "Reservation cancelled successfully!");
         } else {
             model.addAttribute("message", "Reservation Code is not found");
@@ -90,6 +91,15 @@ public class RestaurantPageController {
         List<Reservation> reservations = reservationService.getReservationsForTableToday(tableId);
         return ResponseEntity.ok(reservations);
     }
+
+    @GetMapping("/admin/reservations/today")
+    public String getAllReservationByDay(@RequestParam LocalDate day, Model model) {
+        List<Reservation> reservations = reservationService.getAllReservationByDay(day);
+        model.addAttribute("reservations", reservations);
+        model.addAttribute("day", day);
+        return "reservations";
+    }
+
 }
 
 

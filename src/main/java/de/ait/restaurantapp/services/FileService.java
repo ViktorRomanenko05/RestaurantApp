@@ -3,6 +3,7 @@ package de.ait.restaurantapp.services;
 import de.ait.restaurantapp.model.FileEntity;
 import de.ait.restaurantapp.repositories.FileRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +25,7 @@ public class FileService {
     public FileEntity saveFile(MultipartFile file){
         String fileName = file.getOriginalFilename();
         String fileType = file.getContentType();
+
 
         try {
             byte[] data = file.getBytes();
@@ -62,4 +64,5 @@ public class FileService {
                 () -> {log.warn("No file found by id: {}", id);});
         return file;
     }
+
 }

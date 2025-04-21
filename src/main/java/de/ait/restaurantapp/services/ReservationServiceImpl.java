@@ -22,6 +22,7 @@ import java.time.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Сервис для управления резервированием столиков в ресторане.
@@ -196,18 +197,31 @@ public class ReservationServiceImpl implements ReservationService {
         return reservations;
     }
 
+    @Transactional
+    public List<Reservation> getAllReservationByDay(LocalDate day) {
+        log.debug("Fetching all reservations by day: {}", day);
+        LocalDate today = LocalDate.now();
+        List<Reservation> reservations = reservationRepo.findAll().stream().filter(r -> r.getStartDateTime().toLocalDate().equals(today)).collect(Collectors.toList());
+        log.debug("Found {} reservations by day: {}", reservations.size(), day);
+        return reservations;
+    }
+
     @Override
     public boolean cancelReservation(String reservationCode) {
         log.debug("Attempting to cancel a reservation by code: {}", reservationCode);
         return reservationRepo.findByReservationCode(reservationCode)
                 .map(reservation -> {
+                    if (reservation.getReservationStatus() == ReservationStatus.CANCELED) {
+                        log.warn("Cancel failed - reservation {} is already canceled", reservationCode);
+                        return false;
+                    }
                     reservation.setReservationStatus(ReservationStatus.CANCELED);
                     reservationRepo.save(reservation);
-                    log.info("Reservation(id:{}) CANCELED.", reservation.getId());
+                    log.info("Reservation {} canceled successfully", reservationCode);
                     return true;
                 })
                 .orElseGet(() -> {
-                    log.warn("Cancel failed - reservation not found");
+                    log.warn("Cancel failed - reservation {} not found", reservationCode);
                     return false;
                 });
     }
