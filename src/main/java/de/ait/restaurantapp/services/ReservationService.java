@@ -15,7 +15,4 @@ public interface ReservationService {
     boolean cancelReservation(String reservationCode);
 
     List<Reservation> getReservationsForTableToday(Integer tableId);
-
-
-    
 }

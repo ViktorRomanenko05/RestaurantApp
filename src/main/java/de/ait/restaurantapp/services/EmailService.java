@@ -3,6 +3,7 @@ package de.ait.restaurantapp.services;
 import de.ait.restaurantapp.dto.EmailDto;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 @Service
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -33,6 +35,7 @@ public class EmailService {
         mimeMessageHelper.setTo(dto.getTo());
         mimeMessageHelper.setSubject(dto.getSubject());
         mimeMessageHelper.setText(html, true);
+        log.info("Confirmation email sent to: {}", dto.getName());
 
         mailSender.send(mimeMessage);
     }
