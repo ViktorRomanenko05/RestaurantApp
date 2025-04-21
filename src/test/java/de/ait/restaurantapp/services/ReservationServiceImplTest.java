@@ -246,6 +246,7 @@ public class ReservationServiceImplTest {
         assertEquals(2, capacities.get(1));
     }
 
+
 //    //FIX//
 //    @Test
 //    @DisplayName("Start tomorrow, end - aftertomorrow(during the night)")
@@ -253,15 +254,30 @@ public class ReservationServiceImplTest {
 //        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r15));
 //        assertEquals(0, reservationRepo.findAll().size());
 //    }
-//
-//    //FIX//
-//    @Test
-//    @DisplayName("Reservation by the same user in a one day")
-//    void reservationByTheSameUserInOneDay() throws MessagingException {
-//        reservationService.createReservation(r1);
-//        reservationService.createReservation(r1sameUser);
-//        assertEquals(1, reservationRepo.findAll().size());
-//    }
+
+
+    @Test
+    @DisplayName("Reservation by the same user in one day")
+    void reservationByTheSameUserInOneDay() throws MessagingException {
+        // Первая бронь должна успешно сохраниться
+        reservationService.createReservation(r1);
+
+        // Попытка второй брони тем же email в тот же день — ожидаем исключение
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> reservationService.createReservation(r1sameUser),
+                "Ожидалось IllegalArgumentException при дублирующей брони"
+        );
+        assertTrue(
+                ex.getMessage().contains("already has a reservation"),
+                "Сообщение об ошибке должно содержать информацию о существующей брони"
+        );
+
+        // В репозитории должна быть только первая бронь
+        assertEquals(1, reservationRepo.findAll().size(),
+                "В репозитории должна остаться только первая бронь"
+        );}
+
 
     @Test
     @DisplayName("Reservation in the past")
