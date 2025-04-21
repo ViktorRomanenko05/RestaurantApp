@@ -12,6 +12,7 @@ import de.ait.restaurantapp.utils.ReservationIDGenerator;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
@@ -37,6 +38,12 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepo reservationRepo;
     private final RestaurantTableRepo tableRepository;
     private final EmailService emailService;
+
+    @Value("${restaurant.opening-time}")
+    private String openingTimeString;
+
+    @Value("${restaurant.closing-time}")
+    private String closingTimeString;
 
     /**
      * Создает новое резервирование на основе данных из формы.
@@ -77,9 +84,9 @@ public class ReservationServiceImpl implements ReservationService {
         }
         // ---------------------------------------------------------------
 
-        // --- Ограничение по времени работы ресторана: только с 08:00 до 20:00 ---
-        LocalTime openingTime = LocalTime.of(8, 0);
-        LocalTime closingTime = LocalTime.of(20, 0);
+        // --- Ограничение по времени работы ресторана---
+        LocalTime openingTime = LocalTime.parse(openingTimeString);
+        LocalTime closingTime = LocalTime.parse(closingTimeString);
         LocalTime startTime   = startDateTime.toLocalTime();
         //LocalTime endTime     = endDateTime.toLocalTime();
         if (startTime.isBefore(openingTime) || endTime.isAfter(closingTime)) {
