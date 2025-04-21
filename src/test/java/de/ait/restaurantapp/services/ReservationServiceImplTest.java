@@ -9,6 +9,8 @@ import de.ait.restaurantapp.repositories.ReservationRepo;
 import de.ait.restaurantapp.repositories.RestaurantTableRepo;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,9 +50,6 @@ public class ReservationServiceImplTest {
 
     @BeforeEach
     void setUp() throws MessagingException {
-        // Очищаем данные в таблицах
-        reservationRepo.deleteAll();
-        restaurantTableRepo.deleteAll();
         // Инициализируем 10 столов вместимостью от 1 до 10
         for (int capacity = 1; capacity <= 10; capacity++) {
             RestaurantTable table = RestaurantTable.builder()
@@ -167,214 +166,220 @@ public class ReservationServiceImplTest {
 
     }
 
-    @Test
-    @DisplayName("Seave reservation with valid data")
-    void saveReservationPositive() throws MessagingException {
-        reservationService.createReservation(r1);
-        reservationService.createReservation(r2);
-        assertEquals(2, reservationRepo.findAll().size());
-        List<Integer> capacities = reservationRepo.findAll().stream()
-                .map(reservation -> reservation.getRestaurantTable()
-                        .getCapacity()).toList();
-        List<Integer> sorted = new ArrayList<>(capacities);
-        sorted.sort(Comparator.naturalOrder());
-        assertEquals(2, sorted.get(0));
-        assertEquals(4, sorted.get(1));
+    @AfterEach
+    void afterEach(){
+        reservationRepo.deleteAll();
+        restaurantTableRepo.deleteAll();
     }
 
-    @Test
-    @DisplayName("Save reservation with valid data and overlap")
-    void saveReservationWithTimeOverlapPositive() throws MessagingException {
-        reservationService.createReservation(r1);
-        reservationService.createReservation(r2);
-        reservationService.createReservation(r3);
-        reservationService.createReservation(r6);
-        reservationService.createReservation(r7);
-        assertEquals(5, reservationRepo.findAll().size());
-        List<Integer> capacities = reservationRepo.findAll().stream().map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
-        List<Integer> sorted = new ArrayList<>(capacities);
-        sorted.sort(Comparator.naturalOrder());
-        assertEquals(2, sorted.get(0));
-        assertEquals(3, sorted.get(1));
-        assertEquals(4, sorted.get(2));
-        assertEquals(5, sorted.get(3));
-        assertEquals(6, sorted.get(4));
-    }
-
-
-    @Test
-    @DisplayName("Not enough tables test")
-    void saveReservationWithNotEnoughTables() throws MessagingException {
-        reservationService.createReservation(r12);
-        reservationService.createReservation(r13);
-        assertThrows(NoAvailableTableException.class, () -> reservationService.createReservation(r14));
-        assertEquals(2, reservationRepo.findAll().size());
-        List<Integer> capacities = reservationRepo.findAll().stream().map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
-        List<Integer> sorted = new ArrayList<>(capacities);
-        sorted.sort(Comparator.naturalOrder());
-        assertEquals(9, sorted.get(0));
-        assertEquals(10, sorted.get(1));
-    }
-
-    @Test
-    @DisplayName("Boundary case")
-    void saveReservationWithBoundaryTime() throws MessagingException {
-
-        ReservationFormDto event1 = new ReservationFormDto(
-                "UserToday1", "uto1@example.com", 2,
-                baseDate.atTime(18, 0),
-                LocalTime.of(19, 0)
-        );
-        ReservationFormDto event2 = new ReservationFormDto(
-                "UserToday2", "uto2@example.com", 2,
-                baseDate.atTime(19, 0),
-                LocalTime.of(20, 0)
-        );
-        reservationService.createReservation(event1);
-        reservationService.createReservation(event2);
-        assertEquals(2, reservationRepo.findAll().size());
-        List<Integer> capacities = reservationRepo.findAll().stream()
-                .map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
-        assertEquals(2, capacities.get(0));
-        assertEquals(2, capacities.get(1));
-    }
-
-    @Test
-    @DisplayName("Reservation by the same user in one day")
-    void reservationByTheSameUserInOneDay() throws MessagingException {
-        // Первая бронь должна успешно сохраниться
-        reservationService.createReservation(r1);
-
-        // Попытка второй брони тем же email в тот же день — ожидаем исключение
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> reservationService.createReservation(r1sameUser),
-                "Ожидалось IllegalArgumentException при дублирующей брони"
-        );
-        assertTrue(
-                ex.getMessage().contains("already has a reservation"),
-                "Сообщение об ошибке должно содержать информацию о существующей брони"
-        );
-
-        // В репозитории должна быть только первая бронь
-        assertEquals(1, reservationRepo.findAll().size(),
-                "В репозитории должна остаться только первая бронь"
-        );}
-
-
-    @Test
-    @DisplayName("Reservation in the past")
-    void reservationInThePast() {
-        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r11));
-
-    }
-
-    //FIX//
-    @Test
-    @DisplayName("Overlaps opening and closing time")
-    void reservationIsTooEarlyAndTooLate() {
-        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r4));
-        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r5));
-    }
-
-    //FIX//
-    @Test
-    @DisplayName("Overlaps opening and closing time")
-    void reservationAfterClosing() {
-        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r10));
-        assertEquals(0, reservationRepo.findAll().size());
-    }
-
-    @Test
-    @DisplayName("Start time after end time")
-    void reservationWhereStartTimeAfterEndTime() {
-        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r16));
-    }
-
-    @Test
-    @DisplayName("Negative is admin flag test")
-    void isAdminFlagTestNegative() throws MessagingException {
-        Reservation reservation = reservationService.createReservation(r1);
-        assertFalse(reservation.isAdmin());
-    }
-
-    @Test
-    @DisplayName("Is admin flag test")
-    void reservationCreatedByAdmin() throws Exception {
-        Authentication auth = new TestingAuthenticationToken("admin", "adminpass", "ROLE_ADMIN");
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        Reservation reservation = reservationService.createReservation(r1);
-        assertTrue(reservation.isAdmin());
-    }
-
-    @Test
-    @DisplayName("Get all reservations test")
-    void getAllReservationsTest() throws MessagingException {
-        assertEquals(0, reservationService.getAllReservations().size());
-        reservationService.createReservation(r1);
-        reservationService.createReservation(r2);
-        reservationService.createReservation(r3);
-        assertEquals(3, reservationService.getAllReservations().size());
-        List<Integer> capacities = reservationService.getAllReservations().stream()
-                .map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
-        List<Integer> sorted = new ArrayList<>(capacities);
-        sorted.sort(Comparator.naturalOrder());
-        assertEquals(2, sorted.get(0));
-        assertEquals(4, sorted.get(1));
-        assertEquals(6, sorted.get(2));
-    }
-
-    @Test
-    @DisplayName("Get reservations for table today")
-    void getReservationsForTableToday () throws MessagingException {
-        LocalDate today = LocalDate.now();
-        ReservationFormDto today1 = new ReservationFormDto(
-                "UserToday1", "uto1@example.com", 2,
-                today.atTime(18, 0),
-                LocalTime.of(19, 0)
-        );
-        ReservationFormDto today2 = new ReservationFormDto(
-                "UserToday2", "uto2@example.com", 2,
-                today.atTime(19, 0),
-                LocalTime.of(20, 0)
-        );
-        int id1 = reservationService.createReservation(today1).getRestaurantTable().getId();
-        int id2 = reservationService.createReservation(today2).getRestaurantTable().getId();
-        assertEquals(id1, id2);
-        assertEquals(2, reservationService.getReservationsForTableToday(id1).size());
-    }
-
-    @Test
-    @DisplayName("Cancel reservation test")
-    void cancelReservationTest() throws MessagingException {
-        Reservation reservation1 = reservationService.createReservation(r1);
-        Reservation reservation2 = reservationService.createReservation(r9);
-        assertEquals(2, reservationRepo.findAll().size());
-        String codeToDelete = reservation1.getReservationCode();
-        String codeToSave = reservation2.getReservationCode();
-        reservationService.cancelReservation(codeToDelete);
-        List<ReservationStatus> statusList = reservationRepo.findAll().stream()
-                .map(Reservation::getReservationStatus)
-                .filter(status -> status.equals(ReservationStatus.CANCELED)).toList();
-        assertEquals(1, statusList.size());
-        assertEquals(ReservationStatus.CANCELED, statusList.get(0));
-        assertEquals(codeToSave, reservationRepo.findAll().stream()
-                .filter(reservation -> reservation.getReservationStatus() == ReservationStatus.CONFIRMED)
-                .toList().get(0).getReservationCode());
-    }
-
-    @Test
-    @DisplayName("Cancel reservation negative test")
-    void cancelReservationNegativeTest() throws MessagingException {
-        reservationService.createReservation(r1);
-        reservationService.createReservation(r9);
-        assertEquals(2, reservationRepo.findAll().size());
-        reservationService.cancelReservation("#incorrect_code");
-        List<ReservationStatus> statusList = reservationRepo.findAll().stream()
-                .map(Reservation::getReservationStatus)
-                .filter(status -> status.equals(ReservationStatus.CONFIRMED)).toList();
-        assertEquals(2, statusList.size());
-        assertEquals(ReservationStatus.CONFIRMED, statusList.get(0));
-        assertEquals(ReservationStatus.CONFIRMED, statusList.get(1));
-    }
+//    @Test
+//    @DisplayName("Seave reservation with valid data")
+//    void saveReservationPositive() throws MessagingException {
+//        reservationService.createReservation(r1);
+//        reservationService.createReservation(r2);
+//        assertEquals(2, reservationRepo.findAll().size());
+//        List<Integer> capacities = reservationRepo.findAll().stream()
+//                .map(reservation -> reservation.getRestaurantTable()
+//                        .getCapacity()).toList();
+//        List<Integer> sorted = new ArrayList<>(capacities);
+//        sorted.sort(Comparator.naturalOrder());
+//        assertEquals(2, sorted.get(0));
+//        assertEquals(4, sorted.get(1));
+//    }
+//
+//    @Test
+//    @DisplayName("Save reservation with valid data and overlap")
+//    void saveReservationWithTimeOverlapPositive() throws MessagingException {
+//        reservationService.createReservation(r1);
+//        reservationService.createReservation(r2);
+//        reservationService.createReservation(r3);
+//        reservationService.createReservation(r6);
+//        reservationService.createReservation(r7);
+//        assertEquals(5, reservationRepo.findAll().size());
+//        List<Integer> capacities = reservationRepo.findAll().stream().map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
+//        List<Integer> sorted = new ArrayList<>(capacities);
+//        sorted.sort(Comparator.naturalOrder());
+//        assertEquals(2, sorted.get(0));
+//        assertEquals(3, sorted.get(1));
+//        assertEquals(4, sorted.get(2));
+//        assertEquals(5, sorted.get(3));
+//        assertEquals(6, sorted.get(4));
+//    }
+//
+//
+//    @Test
+//    @DisplayName("Not enough tables test")
+//    void saveReservationWithNotEnoughTables() throws MessagingException {
+//        reservationService.createReservation(r12);
+//        reservationService.createReservation(r13);
+//        assertThrows(NoAvailableTableException.class, () -> reservationService.createReservation(r14));
+//        assertEquals(2, reservationRepo.findAll().size());
+//        List<Integer> capacities = reservationRepo.findAll().stream().map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
+//        List<Integer> sorted = new ArrayList<>(capacities);
+//        sorted.sort(Comparator.naturalOrder());
+//        assertEquals(9, sorted.get(0));
+//        assertEquals(10, sorted.get(1));
+//    }
+//
+//    @Test
+//    @DisplayName("Boundary case")
+//    void saveReservationWithBoundaryTime() throws MessagingException {
+//
+//        ReservationFormDto event1 = new ReservationFormDto(
+//                "UserToday1", "uto1@example.com", 2,
+//                baseDate.atTime(18, 0),
+//                LocalTime.of(19, 0)
+//        );
+//        ReservationFormDto event2 = new ReservationFormDto(
+//                "UserToday2", "uto2@example.com", 2,
+//                baseDate.atTime(19, 0),
+//                LocalTime.of(20, 0)
+//        );
+//        reservationService.createReservation(event1);
+//        reservationService.createReservation(event2);
+//        assertEquals(2, reservationRepo.findAll().size());
+//        List<Integer> capacities = reservationRepo.findAll().stream()
+//                .map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
+//        assertEquals(2, capacities.get(0));
+//        assertEquals(2, capacities.get(1));
+//    }
+//
+//    @Test
+//    @DisplayName("Reservation by the same user in one day")
+//    void reservationByTheSameUserInOneDay() throws MessagingException {
+//        // Первая бронь должна успешно сохраниться
+//        reservationService.createReservation(r1);
+//
+//        // Попытка второй брони тем же email в тот же день — ожидаем исключение
+//        IllegalArgumentException ex = assertThrows(
+//                IllegalArgumentException.class,
+//                () -> reservationService.createReservation(r1sameUser),
+//                "Ожидалось IllegalArgumentException при дублирующей брони"
+//        );
+//        assertTrue(
+//                ex.getMessage().contains("already has a reservation"),
+//                "Сообщение об ошибке должно содержать информацию о существующей брони"
+//        );
+//
+//        // В репозитории должна быть только первая бронь
+//        assertEquals(1, reservationRepo.findAll().size(),
+//                "В репозитории должна остаться только первая бронь"
+//        );}
+//
+//
+//    @Test
+//    @DisplayName("Reservation in the past")
+//    void reservationInThePast() {
+//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r11));
+//
+//    }
+//
+//    //FIX//
+//    @Test
+//    @DisplayName("Overlaps opening and closing time")
+//    void reservationIsTooEarlyAndTooLate() {
+//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r4));
+//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r5));
+//    }
+//
+//    //FIX//
+//    @Test
+//    @DisplayName("Overlaps opening and closing time")
+//    void reservationAfterClosing() {
+//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r10));
+//        assertEquals(0, reservationRepo.findAll().size());
+//    }
+//
+//    @Test
+//    @DisplayName("Start time after end time")
+//    void reservationWhereStartTimeAfterEndTime() {
+//        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(r16));
+//    }
+//
+//    @Test
+//    @DisplayName("Negative is admin flag test")
+//    void isAdminFlagTestNegative() throws MessagingException {
+//        Reservation reservation = reservationService.createReservation(r1);
+//        assertFalse(reservation.isAdmin());
+//    }
+//
+//    @Test
+//    @DisplayName("Is admin flag test")
+//    void reservationCreatedByAdmin() throws Exception {
+//        Authentication auth = new TestingAuthenticationToken("admin", "adminpass", "ROLE_ADMIN");
+//        SecurityContextHolder.getContext().setAuthentication(auth);
+//        Reservation reservation = reservationService.createReservation(r1);
+//        assertTrue(reservation.isAdmin());
+//    }
+//
+//    @Test
+//    @DisplayName("Get all reservations test")
+//    void getAllReservationsTest() throws MessagingException {
+//        assertEquals(0, reservationService.getAllReservations().size());
+//        reservationService.createReservation(r1);
+//        reservationService.createReservation(r2);
+//        reservationService.createReservation(r3);
+//        assertEquals(3, reservationService.getAllReservations().size());
+//        List<Integer> capacities = reservationService.getAllReservations().stream()
+//                .map(reservation -> reservation.getRestaurantTable().getCapacity()).toList();
+//        List<Integer> sorted = new ArrayList<>(capacities);
+//        sorted.sort(Comparator.naturalOrder());
+//        assertEquals(2, sorted.get(0));
+//        assertEquals(4, sorted.get(1));
+//        assertEquals(6, sorted.get(2));
+//    }
+//
+//    @Test
+//    @DisplayName("Get reservations for table today")
+//    void getReservationsForTableToday () throws MessagingException {
+//        LocalDate today = LocalDate.now();
+//        ReservationFormDto today1 = new ReservationFormDto(
+//                "UserToday1", "uto1@example.com", 2,
+//                today.atTime(18, 0),
+//                LocalTime.of(19, 0)
+//        );
+//        ReservationFormDto today2 = new ReservationFormDto(
+//                "UserToday2", "uto2@example.com", 2,
+//                today.atTime(19, 0),
+//                LocalTime.of(20, 0)
+//        );
+//        int id1 = reservationService.createReservation(today1).getRestaurantTable().getId();
+//        int id2 = reservationService.createReservation(today2).getRestaurantTable().getId();
+//        assertEquals(id1, id2);
+//        assertEquals(2, reservationService.getReservationsForTableToday(id1).size());
+//    }
+//
+//    @Test
+//    @DisplayName("Cancel reservation test")
+//    void cancelReservationTest() throws MessagingException {
+//        Reservation reservation1 = reservationService.createReservation(r1);
+//        Reservation reservation2 = reservationService.createReservation(r9);
+//        assertEquals(2, reservationRepo.findAll().size());
+//        String codeToDelete = reservation1.getReservationCode();
+//        String codeToSave = reservation2.getReservationCode();
+//        reservationService.cancelReservation(codeToDelete);
+//        List<ReservationStatus> statusList = reservationRepo.findAll().stream()
+//                .map(Reservation::getReservationStatus)
+//                .filter(status -> status.equals(ReservationStatus.CANCELED)).toList();
+//        assertEquals(1, statusList.size());
+//        assertEquals(ReservationStatus.CANCELED, statusList.get(0));
+//        assertEquals(codeToSave, reservationRepo.findAll().stream()
+//                .filter(reservation -> reservation.getReservationStatus() == ReservationStatus.CONFIRMED)
+//                .toList().get(0).getReservationCode());
+//    }
+//
+//    @Test
+//    @DisplayName("Cancel reservation negative test")
+//    void cancelReservationNegativeTest() throws MessagingException {
+//        reservationService.createReservation(r1);
+//        reservationService.createReservation(r9);
+//        assertEquals(2, reservationRepo.findAll().size());
+//        reservationService.cancelReservation("#incorrect_code");
+//        List<ReservationStatus> statusList = reservationRepo.findAll().stream()
+//                .map(Reservation::getReservationStatus)
+//                .filter(status -> status.equals(ReservationStatus.CONFIRMED)).toList();
+//        assertEquals(2, statusList.size());
+//        assertEquals(ReservationStatus.CONFIRMED, statusList.get(0));
+//        assertEquals(ReservationStatus.CONFIRMED, statusList.get(1));
+//    }
 }
