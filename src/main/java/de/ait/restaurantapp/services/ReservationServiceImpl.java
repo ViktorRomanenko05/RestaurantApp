@@ -75,7 +75,8 @@ public class ReservationServiceImpl implements ReservationService {
         LocalDate reservationDate = startDateTime.toLocalDate();
         boolean alreadyHasBooking = reservationRepo.findAll().stream()
                 .filter(r -> r.getCustomerEmail().equals(form.getCustomerEmail()))
-                .anyMatch(r -> r.getStartDateTime().toLocalDate().isEqual(reservationDate));
+                .anyMatch(r -> r.getStartDateTime().toLocalDate().isEqual(reservationDate)
+                && r.getReservationStatus().equals(ReservationStatus.CONFIRMED));
         if (alreadyHasBooking) {
             throw new IllegalArgumentException(
                     "Email " + form.getCustomerEmail() +
