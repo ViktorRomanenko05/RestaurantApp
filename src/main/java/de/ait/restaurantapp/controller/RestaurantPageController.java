@@ -1,6 +1,7 @@
 package de.ait.restaurantapp.controller;
 
 import de.ait.restaurantapp.dto.ReservationFormDto;
+import de.ait.restaurantapp.exception.NoAvailableTableException;
 import de.ait.restaurantapp.model.Reservation;
 import de.ait.restaurantapp.services.ReservationService;
 import jakarta.mail.MessagingException;
@@ -41,6 +42,9 @@ public class RestaurantPageController {
                     " Your reservation code is: " + reservation.getReservationCode());
         } catch (MessagingException | IllegalArgumentException e) {
             model.addAttribute("message", "Error: " + e.getMessage());
+            model.addAttribute("reservationForm", form);
+        } catch (NoAvailableTableException exception) {
+            model.addAttribute("message", exception.getMessage());
             model.addAttribute("reservationForm", form);
         }
         // reset the form
