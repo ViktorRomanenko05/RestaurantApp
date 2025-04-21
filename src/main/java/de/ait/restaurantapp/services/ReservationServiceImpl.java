@@ -47,7 +47,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public Reservation createReservation(ReservationFormDto form) throws MessagingException {
         // --- Валидация входных параметров ---
-        log.debug("Creating reservation - start | form: guestCount={}, timeRange={} to {}", form.getGuestNumber(), form.getStartDateTime(), form.getEndDateTime());
+        log.debug("Creating reservation - start | form: guestCount={}, timeRange={} to {}", form.getGuestNumber(), form.getStartDateTime(), form.getEndTime());
         Objects.requireNonNull(form, "ReservationFormDto must not be null");
         LocalDateTime startDateTime = Objects.requireNonNull(form.getStartDateTime(), "startDateTime must not be null");
         LocalTime endTime = Objects.requireNonNull(form.getEndTime(), "endTime must not be null");
@@ -55,8 +55,8 @@ public class ReservationServiceImpl implements ReservationService {
         LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
 
         if (!startDateTime.isBefore(endDateTime)) {
-            log.warn("Start date/time must be before end date/time | SDT: {}, EDT: {}", startDateTime, endDateTime);
-            throw new IllegalArgumentException("Start date/time must be before end date/time");
+            log.warn("Start date/time must be before end time | SDT: {}, ET: {}", startDateTime, endDateTime);
+            throw new IllegalArgumentException("Start date/time must be before end time");
         }
         if (startDateTime.isBefore(LocalDateTime.now())) {
             log.warn("Start date/time must be in the future | SDT: {}, EDT: {}", startDateTime, endDateTime);
