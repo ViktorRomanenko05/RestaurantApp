@@ -48,7 +48,9 @@ public class ReservationServiceImpl implements ReservationService {
         // --- Валидация входных параметров ---
         Objects.requireNonNull(form, "ReservationFormDto must not be null");
         LocalDateTime startDateTime = Objects.requireNonNull(form.getStartDateTime(), "startDateTime must not be null");
-        LocalDateTime endDateTime   = Objects.requireNonNull(form.getEndDateTime(),   "endDateTime must not be null");
+        LocalTime endTime   = Objects.requireNonNull(form.getEndTime(),   "endTime must not be null");
+        LocalDate endDate = startDateTime.toLocalDate();
+        LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
 
         if (!startDateTime.isBefore(endDateTime)) {
             throw new IllegalArgumentException("Start date/time must be before end date/time");
@@ -74,7 +76,7 @@ public class ReservationServiceImpl implements ReservationService {
         LocalTime openingTime = LocalTime.of(8, 0);
         LocalTime closingTime = LocalTime.of(20, 0);
         LocalTime startTime   = startDateTime.toLocalTime();
-        LocalTime endTime     = endDateTime.toLocalTime();
+        //LocalTime endTime     = endDateTime.toLocalTime();
         if (startTime.isBefore(openingTime) || endTime.isAfter(closingTime)) {
             throw new IllegalArgumentException(
                     "Reservations are only allowed between " +
