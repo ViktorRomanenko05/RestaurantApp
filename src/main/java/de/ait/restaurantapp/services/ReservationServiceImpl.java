@@ -32,13 +32,14 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
 
-    private final ReservationRepo reservationRepo;           // Репозиторий для резерваций
+    private final ReservationRepo reservationRepo;
     private final RestaurantTableRepo tableRepository;
     private final EmailService emailService;
 
     /**
      * Создает новое резервирование на основе данных из формы.
-     * Добавлена валидация входных данных, установка флага isAdmin
+     * Добавлена валидация входных данных, установка флага isAdmin,
+     * проверка «не более одной брони в день на один email» (исправлено)
      * и более точные исключения.
      */
     @Override
@@ -47,13 +48,38 @@ public class ReservationServiceImpl implements ReservationService {
         // --- Валидация входных параметров ---
         Objects.requireNonNull(form, "ReservationFormDto must not be null");
         LocalDateTime startDateTime = Objects.requireNonNull(form.getStartDateTime(), "startDateTime must not be null");
-        LocalDateTime endDateTime = Objects.requireNonNull(form.getEndDateTime(), "endDateTime must not be null");
+        LocalDateTime endDateTime   = Objects.requireNonNull(form.getEndDateTime(),   "endDateTime must not be null");
 
         if (!startDateTime.isBefore(endDateTime)) {
             throw new IllegalArgumentException("Start date/time must be before end date/time");
         }
         if (startDateTime.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Start date/time must be in the future");
+        }
+
+        // --- Ограничение: не более одной резервации в один день на один email ---
+        LocalDate reservationDate = startDateTime.toLocalDate();
+        boolean alreadyHasBooking = reservationRepo.findAll().stream()
+                .filter(r -> r.getCustomerEmail().equals(form.getCustomerEmail()))
+                .anyMatch(r -> r.getStartDateTime().toLocalDate().isEqual(reservationDate));
+        if (alreadyHasBooking) {
+            throw new IllegalArgumentException(
+                    "Email " + form.getCustomerEmail() +
+                            " already has a reservation on " + reservationDate
+            );
+        }
+        // ---------------------------------------------------------------
+
+        // --- Ограничение по времени работы ресторана: только с 08:00 до 20:00 ---
+        LocalTime openingTime = LocalTime.of(8, 0);
+        LocalTime closingTime = LocalTime.of(20, 0);
+        LocalTime startTime   = startDateTime.toLocalTime();
+        LocalTime endTime     = endDateTime.toLocalTime();
+        if (startTime.isBefore(openingTime) || endTime.isAfter(closingTime)) {
+            throw new IllegalArgumentException(
+                    "Reservations are only allowed between " +
+                            openingTime + " and " + closingTime
+            );
         }
 
         // --- Определяем, создал ли текущий пользователь как админ ---
@@ -92,7 +118,7 @@ public class ReservationServiceImpl implements ReservationService {
                         .endDateTime(endDateTime)
                         .restaurantTable(table)
                         .reservationStatus(ReservationStatus.CONFIRMED)
-                        .isAdmin(isAdmin)        // устанавливаем флаг
+                        .isAdmin(isAdmin)
                         .build();
 
                 // Сохраняем в БД до отправки письма
@@ -120,16 +146,13 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepo.findAll();
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<Reservation> getReservationsForTableToday(Integer tableId) {
-        // 1) Определяем границы «сегодня»
         LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime startOfDay     = today.atStartOfDay();
         LocalDateTime startOfNextDay = today.plusDays(1).atStartOfDay();
 
-        // 2) Делаем запрос через репозиторий
         return reservationRepo
                 .findByRestaurantTable_IdAndStartDateTimeGreaterThanEqualAndStartDateTimeLessThan(
                         tableId,
@@ -140,12 +163,12 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public boolean cancelReservation(String reservationCode) {
-       return reservationRepo.findByReservationCode(reservationCode)
+        return reservationRepo.findByReservationCode(reservationCode)
                 .map(reservation -> {
                     reservation.setReservationStatus(ReservationStatus.CANCELED);
                     reservationRepo.save(reservation);
                     return true;
                 })
-               .orElse(false);
+                .orElse(false);
     }
 }
