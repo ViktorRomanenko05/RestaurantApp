@@ -70,26 +70,6 @@ public class RestaurantPageController {
         model.addAttribute("reservationCode", "");
         return "cancel-form";
     }
-
-    @GetMapping("/admin")
-    public String showAdminPage() {
-        return "admin-form";
-    }
-    /**
-     * Возвращает все резервации на сегодняшний день для заданного столика.
-     * Доступно только администратору.
-     *
-     * @param tableId ID столика
-     * @return список резерваций
-     */
-    @GetMapping("/admin/{tableId}/today")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Reservation>> getReservationsForTableToday(
-            @PathVariable Integer tableId
-    ) {
-        List<Reservation> reservations = reservationService.getReservationsForTableToday(tableId);
-        return ResponseEntity.ok(reservations);
-    }
 }
 
 
