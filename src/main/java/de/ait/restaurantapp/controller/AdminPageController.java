@@ -95,6 +95,7 @@ public class AdminPageController {
         return "admin-panel";
     }
 
+    // todo change this logic so, that it can use saveFile from service
     @PostMapping("/upload-menu")
     public String uploadMenu(@RequestParam("file") MultipartFile file, Model model) {
         if (file.isEmpty() || !file.getOriginalFilename().endsWith(".pdf")) {
