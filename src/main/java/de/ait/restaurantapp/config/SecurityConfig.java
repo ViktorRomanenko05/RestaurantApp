@@ -1,19 +1,49 @@
 package de.ait.restaurantapp.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
+import org.springframework.core.annotation.*;
+import org.springframework.security.config.annotation.web.builders.*;
+import org.springframework.security.config.annotation.web.configuration.*;
+import org.springframework.security.core.userdetails.*;
+import org.springframework.security.provisioning.*;
+import org.springframework.security.web.*;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.core.userdetails.UserDetailsService;
+
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    // 1-й фильтр — для /restaurant/admin/**
+    @Bean
+    @Order(1)
+    public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/restaurant/admin/**")
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().hasRole("ADMIN")
+                )
+                .httpBasic(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable());
+        return http.build();
+    }
+
+    // 2-й фильтр — для всего остального
+    @Bean
+    public SecurityFilterChain publicSecurity(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/restaurant", "/restaurant/",
+                                "/restaurant/reservations/**",
+                                "/restaurant/reserve/**",
+                                "/restaurant/cancel/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .csrf(csrf -> csrf.disable());
+        return http.build();
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -22,30 +52,5 @@ public class SecurityConfig {
                 .roles("ADMIN")
                 .build();
         return new InMemoryUserDetailsManager(admin);
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                // 1) Авторизация
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "restaurant",
-                                "restaurant/",
-                                "restaurant/reservations/**",
-                                "restaurant/reserve/**",
-                                "restaurant/cancel/**")
-                        .permitAll()
-                        .requestMatchers("restaurant/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-
-                // 2) HTTP Basic через Customizer
-                .httpBasic(Customizer.withDefaults())
-
-                // 3) Отключение CSRF через лямбду
-                .csrf(csrf -> csrf.disable());
-
-        return http.build();
     }
 }
