@@ -3,11 +3,14 @@ package de.ait.restaurantapp.services;
 import de.ait.restaurantapp.model.FileEntity;
 import de.ait.restaurantapp.repositories.FileRepo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,25 +18,38 @@ import java.util.Optional;
 @Slf4j
 public class FileService {
 
+    @Value("${file.upload}")
+    private String uploadDirectory;
+
     private final FileRepo fileRepo;
 
     public FileService(FileRepo fileRepo) {
         this.fileRepo = fileRepo;
     }
 
-    // сохранение файла в бд
+    // сохранение файла в menus
     public FileEntity saveFile(MultipartFile file){
         String fileName = file.getOriginalFilename();
         String fileType = file.getContentType();
+        File directory = new File(uploadDirectory);
 
+        if(!directory.exists()) {
+            log.debug("Creating directory for file menu: {}", uploadDirectory);
+            directory.mkdirs();
+        }
+
+        Path destination = Paths.get(uploadDirectory).resolve(fileName);
 
         try {
-            byte[] data = file.getBytes();
-            FileEntity fileEntity = new FileEntity(fileName, fileType, data);
-            log.debug("Saving file: {}", fileEntity);
-            return fileRepo.save(fileEntity);
-        } catch (IOException exception){
-            log.warn("Error while saving file: {}", exception.getMessage());
+            file.transferTo(destination);
+
+            return new FileEntity(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+            );
+        } catch (IOException e) {
+            log.error("Error saving file {}: {}", file.getOriginalFilename(), e.getMessage());
             return null;
         }
     }
