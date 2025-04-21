@@ -29,9 +29,15 @@ public class SecurityConfig {
         http
                 // 1) Авторизация
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/reservations/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                "restaurant",
+                                "restaurant/",
+                                "restaurant/reservations/**",
+                                "restaurant/reserve/**",
+                                "restaurant/cancel/**")
+                        .permitAll()
+                        .requestMatchers("restaurant/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
 
                 // 2) HTTP Basic через Customizer
