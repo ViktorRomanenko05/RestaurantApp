@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -72,6 +71,7 @@ public class AdminPageController {
             model.addAttribute("message", "Reservation Code is not found");
         }
         model.addAttribute("reservationCode", "");
+        model.addAttribute("reservationForm", new ReservationFormDto());
         return "admin-panel";
     }
 
@@ -82,6 +82,7 @@ public class AdminPageController {
             model.addAttribute("message", "No reservations found for table " + tableNumber);
         }
         model.addAttribute("tableReservations", tableReservations);
+        model.addAttribute("reservationForm", new ReservationFormDto());
         return "admin-panel";
     }
 
@@ -90,6 +91,7 @@ public class AdminPageController {
 //       List<Reservation> reservationsByDate = reservationService.getAllConfirmedReservationByDay(date);
 //        if (reservationsByDate.isEmpty()) {
 //            model.addAttribute("message", "No reservations found for date: " + date);
+//            model.addAttribute("reservationForm", new ReservationFormDto());
 //        }
 //        model.addAttribute("allReservations", reservationsByDate);
 //        return "admin-panel";
@@ -116,6 +118,6 @@ public class AdminPageController {
             throw new RuntimeException(e);
         }
         model.addAttribute("reservationForm", new ReservationFormDto());
-        return "/admin-panel";
+        return "admin-panel";
     }
 }
