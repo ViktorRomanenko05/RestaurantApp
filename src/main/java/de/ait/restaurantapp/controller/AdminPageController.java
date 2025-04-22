@@ -36,11 +36,11 @@ public class AdminPageController {
     public AdminPageController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
-    @GetMapping
-    public String showAdminPanel(Model model) {
-        model.addAttribute("reservationForm", new ReservationFormDto());
-        return "admin-panel";
-    }
+//    @GetMapping
+//    public String showAdminPanel(Model model) {
+//        model.addAttribute("reservationForm", new ReservationFormDto());
+//        return "admin-panel";
+//    }
 
 
     @PostMapping("/reserve")

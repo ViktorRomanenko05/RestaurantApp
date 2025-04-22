@@ -28,6 +28,12 @@ public class RestaurantPageController {
         return "homepage";
     }
 
+    @GetMapping("/admin")
+    public String showAdminPanel(Model model) {
+        model.addAttribute("reservationForm", new ReservationFormDto());
+        return "admin-panel";
+    }
+
     @GetMapping("/reserve")
     public String showReservationPage(Model model) {
         model.addAttribute("reservationForm", new ReservationFormDto());
