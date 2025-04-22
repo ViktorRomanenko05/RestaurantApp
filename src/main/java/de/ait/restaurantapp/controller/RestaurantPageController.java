@@ -3,35 +3,29 @@ package de.ait.restaurantapp.controller;
 import de.ait.restaurantapp.dto.ReservationFormDto;
 import de.ait.restaurantapp.exception.NoAvailableTableException;
 import de.ait.restaurantapp.model.Reservation;
+import de.ait.restaurantapp.services.FileService;
 import de.ait.restaurantapp.services.ReservationService;
 import jakarta.mail.MessagingException;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
 
 @Controller
 @RequestMapping("/restaurant")
 public class RestaurantPageController {
 
     private final ReservationService reservationService;
+    private final FileService fileService;
 
-    public RestaurantPageController(ReservationService reservationService) {
+    public RestaurantPageController(ReservationService reservationService, FileService fileService) {
         this.reservationService = reservationService;
+        this.fileService = fileService;
     }
 
     @GetMapping
     public String showHomePage(Model model) {
         return "homepage";
-    }
-
-    @GetMapping("/admin")
-    public String showAdminPanel(Model model) {
-        model.addAttribute("reservationForm", new ReservationFormDto());
-        return "admin-panel";
     }
 
     @GetMapping("/reserve")
@@ -75,6 +69,15 @@ public class RestaurantPageController {
         }
         model.addAttribute("reservationCode", "");
         return "cancel-form";
+    }
+
+    @GetMapping("/menu")
+    public ResponseEntity<byte[]> downloadMenu() {
+        return fileService.getMenu()
+                .map(file -> ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"")
+                        .body(file.getData()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
 
