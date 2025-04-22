@@ -14,22 +14,24 @@ import org.springframework.security.config.Customizer;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // 1-й фильтр — для /restaurant/admin/**
     @Bean
     @Order(1)
     public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/restaurant/admin/**")
+                // явно покрываем и /restaurant/admin, и всё внутри него
+                .securityMatcher("/restaurant/admin", "/restaurant/admin/**")
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().hasRole("ADMIN")
                 )
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(Customizer.withDefaults())    // включаем Basic‑аутентификацию
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }
 
-    // 2-й фильтр — для всего остального
+
+
     @Bean
+    @Order(2)
     public SecurityFilterChain publicSecurity(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
@@ -41,9 +43,11 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .httpBasic(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }
+
 
     @Bean
     public UserDetailsService userDetailsService() {

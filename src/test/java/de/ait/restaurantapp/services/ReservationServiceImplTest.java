@@ -37,141 +37,141 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test")
 public class ReservationServiceImplTest {
 
-    @Autowired
-    private ReservationRepo reservationRepo;
-    @Autowired
-    private RestaurantTableRepo restaurantTableRepo;
-    @Autowired
-    private ReservationServiceImpl reservationService;
-
-    private ReservationFormDto r1, r1sameUser, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16;
-
-    private LocalDate baseDate;
-
-    @BeforeEach
-    void setUp() throws MessagingException {
-        // Инициализируем 10 столов вместимостью от 1 до 10
-        for (int capacity = 1; capacity <= 10; capacity++) {
-            RestaurantTable table = RestaurantTable.builder()
-                    .capacity(capacity)
-                    .build();
-            restaurantTableRepo.save(table);
-        }
-        baseDate = LocalDate.now().plusDays(1);
-
-        // валидные в рабочее время
-        r1 = new ReservationFormDto(
-                "User1", "u1@example.com", 2,
-                baseDate.atTime(10, 0),
-                LocalTime.of(12, 0)
-        );
-
-        r1sameUser = new ReservationFormDto(
-                "User1", "u1@example.com", 2,
-                baseDate.atTime(18, 0),
-                LocalTime.of(20, 0)
-        );
-        r2 = new ReservationFormDto(
-                "User2", "u2@example.com", 4,
-                baseDate.atTime(11, 0),
-                LocalTime.of(13, 0)
-        );
-        r3 = new ReservationFormDto(
-                "User3", "u3@example.com", 6,
-                baseDate.atTime(14, 0),
-                LocalTime.of(16, 0)
-        );
-
-        // до открытия и пересекает закрытие
-        r4 = new ReservationFormDto(
-                "User4", "u4@example.com", 2,
-                baseDate.atTime(7, 0),
-                LocalTime.of(9, 0)
-        );
-        r5 = new ReservationFormDto(
-                "User5", "u5@example.com", 2,
-                baseDate.atTime(19, 0),
-                LocalTime.of(21, 0)
-        );
-
-        // overlap внутри рабочего времени
-        r6 = new ReservationFormDto(
-                "User6", "u6@example.com", 3,
-                baseDate.atTime(9, 0),
-                LocalTime.of(11, 0)
-        );
-        r7 = new ReservationFormDto(
-                "User7", "u7@example.com", 4,
-                baseDate.atTime(11, 0),
-                LocalTime.of(13, 0)
-        );
-        r8 = new ReservationFormDto(
-                "User8", "u8@example.com", 2,
-                baseDate.atTime(12, 0),
-                LocalTime.of(14, 0)
-        );
-
-        // граничные часы (открытие и закрытие)
-        r9 = new ReservationFormDto(
-                "User9", "u9@example.com", 2,
-                baseDate.atTime(8, 0),
-                LocalTime.of(10, 0)
-        );
-        r10 = new ReservationFormDto(
-                "User10", "u10@example.com", 2,
-                baseDate.atTime(20, 0),
-                LocalTime.of(22, 0)
-        );
-        // старт вчера
-        r11 = new ReservationFormDto(
-                "User11",
-                "u11@example.com",
-                2,
-                LocalDate.now().minusDays(1).atTime(10, 0),
-                LocalTime.of(12, 0)
-        );
-
-        // два валидных бронирования на 9 гостей в рабочие часы
-        r12 = new ReservationFormDto(
-                "User12",
-                "nineA@example.com",
-                9,
-                baseDate.atTime(10, 0),
-                LocalTime.of(12, 0)
-        );
-
-        r13 = new ReservationFormDto(
-                "User13",
-                "nineB@example.com",
-                9,
-                baseDate.atTime(10, 0),
-                LocalTime.of(12, 0)
-        );
-
-        r14 = new ReservationFormDto(
-                "User14",
-                "tenA@example.com",
-                10,
-                baseDate.atTime(10, 0),
-                LocalTime.of(12, 0)
-        );
-
-
-        //Время начала позже времени окончания
-        r16 = new ReservationFormDto(
-                "User16", "u16@example.com", 2,
-                baseDate.atTime(12, 0),
-                LocalTime.of(10, 0)
-        );
-
-    }
-
-    @AfterEach
-    void afterEach(){
-        reservationRepo.deleteAll();
-        restaurantTableRepo.deleteAll();
-    }
-
+//    @Autowired
+//    private ReservationRepo reservationRepo;
+//    @Autowired
+//    private RestaurantTableRepo restaurantTableRepo;
+//    @Autowired
+//    private ReservationServiceImpl reservationService;
+//
+//    private ReservationFormDto r1, r1sameUser, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16;
+//
+//    private LocalDate baseDate;
+//
+//    @BeforeEach
+//    void setUp() throws MessagingException {
+//        // Инициализируем 10 столов вместимостью от 1 до 10
+//        for (int capacity = 1; capacity <= 10; capacity++) {
+//            RestaurantTable table = RestaurantTable.builder()
+//                    .capacity(capacity)
+//                    .build();
+//            restaurantTableRepo.save(table);
+//        }
+//        baseDate = LocalDate.now().plusDays(1);
+//
+//        // валидные в рабочее время
+//        r1 = new ReservationFormDto(
+//                "User1", "u1@example.com", 2,
+//                baseDate.atTime(10, 0),
+//                LocalTime.of(12, 0)
+//        );
+//
+//        r1sameUser = new ReservationFormDto(
+//                "User1", "u1@example.com", 2,
+//                baseDate.atTime(18, 0),
+//                LocalTime.of(20, 0)
+//        );
+//        r2 = new ReservationFormDto(
+//                "User2", "u2@example.com", 4,
+//                baseDate.atTime(11, 0),
+//                LocalTime.of(13, 0)
+//        );
+//        r3 = new ReservationFormDto(
+//                "User3", "u3@example.com", 6,
+//                baseDate.atTime(14, 0),
+//                LocalTime.of(16, 0)
+//        );
+//
+//        // до открытия и пересекает закрытие
+//        r4 = new ReservationFormDto(
+//                "User4", "u4@example.com", 2,
+//                baseDate.atTime(7, 0),
+//                LocalTime.of(9, 0)
+//        );
+//        r5 = new ReservationFormDto(
+//                "User5", "u5@example.com", 2,
+//                baseDate.atTime(19, 0),
+//                LocalTime.of(21, 0)
+//        );
+//
+//        // overlap внутри рабочего времени
+//        r6 = new ReservationFormDto(
+//                "User6", "u6@example.com", 3,
+//                baseDate.atTime(9, 0),
+//                LocalTime.of(11, 0)
+//        );
+//        r7 = new ReservationFormDto(
+//                "User7", "u7@example.com", 4,
+//                baseDate.atTime(11, 0),
+//                LocalTime.of(13, 0)
+//        );
+//        r8 = new ReservationFormDto(
+//                "User8", "u8@example.com", 2,
+//                baseDate.atTime(12, 0),
+//                LocalTime.of(14, 0)
+//        );
+//
+//        // граничные часы (открытие и закрытие)
+//        r9 = new ReservationFormDto(
+//                "User9", "u9@example.com", 2,
+//                baseDate.atTime(8, 0),
+//                LocalTime.of(10, 0)
+//        );
+//        r10 = new ReservationFormDto(
+//                "User10", "u10@example.com", 2,
+//                baseDate.atTime(20, 0),
+//                LocalTime.of(22, 0)
+//        );
+//        // старт вчера
+//        r11 = new ReservationFormDto(
+//                "User11",
+//                "u11@example.com",
+//                2,
+//                LocalDate.now().minusDays(1).atTime(10, 0),
+//                LocalTime.of(12, 0)
+//        );
+//
+//        // два валидных бронирования на 9 гостей в рабочие часы
+//        r12 = new ReservationFormDto(
+//                "User12",
+//                "nineA@example.com",
+//                9,
+//                baseDate.atTime(10, 0),
+//                LocalTime.of(12, 0)
+//        );
+//
+//        r13 = new ReservationFormDto(
+//                "User13",
+//                "nineB@example.com",
+//                9,
+//                baseDate.atTime(10, 0),
+//                LocalTime.of(12, 0)
+//        );
+//
+//        r14 = new ReservationFormDto(
+//                "User14",
+//                "tenA@example.com",
+//                10,
+//                baseDate.atTime(10, 0),
+//                LocalTime.of(12, 0)
+//        );
+//
+//
+//        //Время начала позже времени окончания
+//        r16 = new ReservationFormDto(
+//                "User16", "u16@example.com", 2,
+//                baseDate.atTime(12, 0),
+//                LocalTime.of(10, 0)
+//        );
+//
+//    }
+//
+//    @AfterEach
+//    void afterEach(){
+//        reservationRepo.deleteAll();
+//        restaurantTableRepo.deleteAll();
+//    }
+//
 //    @Test
 //    @DisplayName("Seave reservation with valid data")
 //    void saveReservationPositive() throws MessagingException {
