@@ -1,82 +1,724 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Панель Администратора</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h1>Панель Администратора</h1>-->
+
+<!--&lt;!&ndash; Уведомление &ndash;&gt;-->
+<!--<div th:if="${message}">-->
+<!--    <p th:text="${message}"></p>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Форма загрузки меню &ndash;&gt;-->
+<!--<div>-->
+<!--    <section>-->
+<!--        <h2>Загрузить меню (PDF)</h2>-->
+<!--        <form th:action="@{/restaurant/admin/upload-menu}" method="post" enctype="multipart/form-data">-->
+<!--            <input type="file" name="file" accept="application/pdf" required>-->
+<!--            <button type="submit">Загрузить меню</button>-->
+<!--        </form>-->
+<!--    </section>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Форма создания резервации &ndash;&gt;-->
+<!--<div>-->
+<!--    <section>-->
+<!--        <h2>Создать резервацию</h2>-->
+<!--        <form th:action="@{/restaurant/admin/reserve}" th:object="${reservationForm}" method="post">-->
+<!--            <label>Имя клиента: <input type="text" th:field="*{customerName}" required></label><br>-->
+<!--            <label>Email клиента: <input type="email" th:field="*{customerEmail}" required></label><br>-->
+<!--            <label>Количество гостей: <input type="number" th:field="*{guestNumber}" min="1" required></label><br>-->
+<!--            <label>Начало: <input type="datetime-local" th:field="*{startDateTime}" required></label><br>-->
+<!--            <label>Окончание: <input type="time" th:field="*{endTime}" required></label>-->
+<!--            <button type="submit">Создать</button>-->
+<!--        </form>-->
+<!--    </section>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Форма отмены брони &ndash;&gt;-->
+<!--<div>-->
+<!--    <section>-->
+<!--        <h2>Отменить резервацию</h2>-->
+<!--        <form th:action="@{/restaurant/admin/cancel}" method="post">-->
+<!--            <label>Код резервации: <input type="text" name="reservationCode" required></label>-->
+<!--            <button type="submit">Отменить</button>-->
+<!--        </form>-->
+<!--    </section>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Поиск резерваций по дате &ndash;&gt;-->
+<!--<div>-->
+<!--    <section>-->
+<!--        <h2>Найти резервации по дате</h2>-->
+<!--        <form th:action="@{/restaurant/admin/reservations/confirmed/by-date}" method="get">-->
+<!--            <label>Дата:-->
+<!--                <input type="date" name="date" required>-->
+<!--            </label>-->
+<!--            <button type="submit">Показать</button>-->
+<!--        </form>-->
+<!--    </section>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Поиск резерваций по столику &ndash;&gt;-->
+<!--<div>-->
+<!--    <section>-->
+<!--        <h2>Найти резервации по столику</h2>-->
+<!--        <form th:action="@{/restaurant/admin/reservations/today}" method="get">-->
+<!--            <label>Номер столика:-->
+<!--                <input type="number" name="tableNumber" min="1" required>-->
+<!--            </label>-->
+<!--            <button type="submit">Показать</button>-->
+<!--        </form>-->
+<!--    </section>-->
+<!--</div>-->
+
+<!--<div class="table-cansellation__link">-->
+<!--    <a th:href="@{/restaurant}">Вернуться на Главную Страницу</a>-->
+<!--</div>-->
+
+<!--</body>-->
+<!--</html>-->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Панель Администратора</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бронь столика</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Salsa:wght@400&display=swap"
+            rel="stylesheet">
+    <link
+            href="https://fonts.googleapis.com/css2?family=Alegreya%20Sans%20SC:wght@700&display=swap"
+            rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            padding: 0;
+            margin: 0;
+            border: none;
+
+            box-sizing: border-box;
+        }
+        *::before,
+        *::after {
+            display: inline-block;
+        }
+        a {
+            text-decoration: none;
+            display: inline-block;
+            color: inherit;
+        }
+        li {
+            list-style: none;
+        }
+        img {
+            max-width: 100%;
+            vertical-align: middle;
+        }
+        html,
+        body {
+            line-height: 1;
+            height: 100%;
+        }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: inherit;
+            font-size: inherit;
+        }
+
+        .wrapper {
+            min-height: 100vh;
+            overflow: clip;
+        }
+
+        .container{
+            max-width: 1515px;
+            margin: 0 auto;
+            padding-right: 15px;
+
+        }
+
+        .content-wrapper{
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .header {
+            position: absolute;
+            top:0;
+            left: 0px;
+            min-height: 100%;
+            background-color: #68462D;
+            padding: 15px 0;
+        }
+
+        .header__inner{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header__logo-container {
+            position: relative;
+            max-width: 100px;
+            width: 100%;
+        }
+
+
+        .header__logo-container::before{
+            position: absolute;
+            top:0;
+            left:-10px;
+            z-index: 1;
+            content: "";
+            width: 110px;
+            height: 100px;
+            background-color: #D5CCBA;
+            border-radius: 50%;
+        }
+
+        .header__logo {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+        .header__menu {
+            padding:40px 0;
+        }
+        .header__menu-list {
+            display: flex;
+            flex-direction: column;
+            gap:20px;
+        }
+        .header__menu-item {
+            position: relative;
+            z-index: 10;
+            padding:20px 40px 20px 20px;
+            border:2px solid #D5CCBA;
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+            letter-spacing: 3px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            color:#443A36;
+            text-align: center;
+            font-size: 20px;
+            font-family: "Lobster",serif;
+            font-weight: 700;
+            background: #E6D7C4;
+            cursor: pointer;
+        }
+
+        .header__menu-item:before{
+            content: "";
+            position: absolute;
+            top:30%;
+            right:5px;
+            width: 15px;
+            height: 15px;
+            border-left:15px solid #443A36;
+            border-top:15px solid transparent;
+            border-bottom:15px solid transparent;
+        }
+
+        .header__menu-item:hover:before{
+            border-right:15px solid #443A36;
+            border-left: 0;
+        }
+
+        .header__menu-item:hover >div{
+            opacity: 1;
+            visibility: visible;
+            cursor: auto;
+        }
+
+        .header__menu-item > div{
+            position: absolute;
+            left:100%;
+            top:-255px;
+            opacity: 0;
+            visibility: hidden;
+            /* opacity: 1;
+            visibility: visible; */
+        }
+
+
+        /* reservation-form */
+        .section-form{
+            color: rgba(65, 54, 37, 0.79);
+            min-height: 100vh;
+            min-width: 800px;
+            display:flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(0deg, rgba(175, 145, 145, 0.16) 0%, rgba(175, 145, 145, 0.16) 100%), #E8D7B7;
+        }
+        .table-reservation {
+            position: relative;
+            background: linear-gradient(0deg, rgba(175, 145, 145, 0.16) 0%, rgba(175, 145, 145, 0.16) 100%), #E8D7B7;
+            display:flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: rgba(65, 54, 37, 0.79);
+            font-family: "Alegreya Sans SC",sans-serif;
+            background-color: #f0e8dc;
+            border:2px solid #D5CCBA;
+            border-radius: 10px;
+        }
+
+        .message__test {
+
+            font-size: 18px;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .table-reservation__form {
+            position: relative;
+        }
+
+        .table-reservation__form::before{
+            position: absolute;
+            bottom:60px;
+            left:3px;
+            content:"";
+            width: 100px;
+            height: 100px;
+            background:url(https://i.postimg.cc/3xR36vWh/deco-1.avif) 0 0 / cover no-repeat;
+            transform: rotate(90deg);
+        }
+
+        .table-reservation__form::after{
+            position: absolute;
+            top:-5px;
+            right:6px;
+            content:"";
+            width: 100px;
+            height: 100px;
+            background:url(https://i.postimg.cc/3xR36vWh/deco-1.avif) 0 0 / cover no-repeat;
+            transform: rotate(270deg);
+        }
+        .table-reservation__title {
+            margin:-30px 20px 20px;
+            padding:10px;
+            background: #E6D7C4;
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+            font-weight: 700;
+            letter-spacing: 3px;
+            font-size: 50px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding:10px;
+            margin-bottom:20px;
+        }
+
+        .form__data-container{
+            background-color: #FDFAEF;
+            padding:40px;
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form__data-container>div:not(:last-child){
+            margin-bottom:30px;
+        }
+        .form__group {
+            position: relative;
+            font-family: "Salsa",serif;
+        }
+        .form__label {
+            position: absolute;
+            top:-12px;
+            left:10px;
+            display: block;
+            font-size: 20px;
+            background-color: #FDFAEF;
+            padding:0 10px;
+
+        }
+        .form__input {
+            min-width: 400px;
+            background-color: #FDFAEF;
+            border:1px solid #CBCBCB;
+            border-radius: 10px;
+            padding:15px;
+            font-size: 20px;
+            color:inherit;
+            font-family: inherit;
+        }
+
+        .form__input:focus{
+            outline: none;
+            box-shadow: 3px 3px 8px #E3C8AE;
+        }
+        .form__submit-btn {
+            color:inherit;
+            font-weight: 700;
+            font-family: inherit;
+            padding:15px;
+            background-color: #E3C8AE;
+            border-radius: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 5px 0 0 rgba(65, 54, 37, 0.79);;
+            transition:all 0.3s;
+            position: relative;
+            top:0;
+            max-width: 200px;
+            cursor: pointer;
+        }
+        .form__submit-btn:hover{
+            background-color: #d6b390;
+        }
+
+        .form__submit-btn:active{
+            top:3px;
+            box-shadow: 0 2px 0px 0px rgba(65, 54, 37, 0.79);;
+        }
+        .message{
+            min-height: 200px;
+        }
+
+
+        /* canselation-form */
+        .section-form__cansellation{
+            margin-top:-82px;
+        }
+
+        .table-cansellation{
+            position: relative;
+            background: linear-gradient(0deg, rgba(175, 145, 145, 0.16) 0%, rgba(175, 145, 145, 0.16) 100%), #E8D7B7;
+            display:flex;
+
+            color: rgba(65, 54, 37, 0.79);
+            font-family: "Alegreya Sans SC",sans-serif;
+            background-color: #f0e8dc;
+            border:2px solid #D5CCBA;
+            border-radius: 10px;
+        }
+
+
+        /* load-menu */
+        .section-form__wrapper{
+            max-width: 500px;
+            background-color: #f0e8dc;
+            border-radius: 10px;
+        }
+
+        .item__load-menu{
+
+            font-size: 30px;
+            display: flex;
+            gap:25px;
+        }
+
+        h2{
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+
+        .menu-btn{
+            margin-top:15px;
+        }
+
+
+        /* main-section */
+        .main{
+            position: absolute;
+            top:50px;
+            left:350px;
+        }
+        .main-container{
+            display: flex;
+            align-items: flex-start;
+            gap:100px;
+            flex-wrap:nowrap;
+
+        }
+
+        .find-reservation{
+            max-width: 500px;
+            color: wheat;
+            padding:20px;
+            background-color: #68462D;
+            border-radius: 10px;
+        }
+
+        .title{
+            max-width: 400px;
+            font-family: "Salsa",serif;
+            font-weight: 700;
+            font-size: 30px;
+            padding-left:10px;
+            margin-bottom: 15px;
+        }
+
+        [type = "date"]{
+            margin-top:10px;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        .find-reservation__form{
+            display: flex;
+            gap:15px;
+            align-items: center;
+
+        }
+
+        .btn{
+            margin-top:20px;
+            color:#443A36;
+        }
+
+        .btn-number{
+            margin-top:25px;
+            color:#443A36;
+        }
+
+        [type = "number"]{
+            margin-top:10px;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        .lable{
+            font-family: "Salsa",serif;
+            font-weight: 700;
+            font-size: 25px;
+            color: #b4b2b0;
+        }
+
+        .data-container{
+            margin-top: 30px;
+            padding:10px;
+        }
+
+        .data-container h2{
+            color: #68462D;
+            font-weight: 700;
+        }
+
+        .data-container li{
+            padding: 10px 0;
+            color: #443a36
+        }
+
+        .data-container li:not(:last-child){
+            border-bottom: 1px solid #443a36;
+        }
+
+    </style>
 </head>
+
 <body>
-<h1>Панель Администратора</h1>
-
-<!-- Уведомление -->
-<div th:if="${message}">
-    <p th:text="${message}"></p>
-</div>
-
-<!-- Форма загрузки меню -->
-<div>
-    <section>
-        <h2>Загрузить меню (PDF)</h2>
-        <form th:action="@{/restaurant/admin/upload-menu}" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept="application/pdf" required>
-            <button type="submit">Загрузить меню</button>
-        </form>
-    </section>
-</div>
-
-<!-- Форма создания резервации -->
-<div>
-    <section>
-        <h2>Создать резервацию</h2>
-        <form th:action="@{/restaurant/admin/reserve}" th:object="${reservationForm}" method="post">
-            <label>Имя клиента: <input type="text" th:field="*{customerName}" required></label><br>
-            <label>Email клиента: <input type="email" th:field="*{customerEmail}" required></label><br>
-            <label>Количество гостей: <input type="number" th:field="*{guestNumber}" min="1" required></label><br>
-            <label>Начало: <input type="datetime-local" th:field="*{startDateTime}" required></label><br>
-            <label>Окончание: <input type="time" th:field="*{endTime}" required></label><br>
-            <button type="submit">Создать</button>
-        </form>
-    </section>
-</div>
-
-<!-- Форма отмены брони -->
-<div>
-    <section>
-        <h2>Отменить резервацию</h2>
-        <form th:action="@{/restaurant/admin/cancel}" method="post">
-            <label>Код резервации: <input type="text" name="reservationCode" required></label>
-            <button type="submit">Отменить</button>
-        </form>
-    </section>
-</div>
-
-<!-- Поиск резерваций по дате -->
-<div>
-    <section>
-        <h2>Найти резервации по дате</h2>
-        <form th:action="@{/restaurant/admin/reservations/confirmed/by-date}" method="get">
-            <label>Дата:
-                <input type="date" name="date" required>
-            </label>
-            <button type="submit">Показать</button>
-        </form>
-    </section>
-</div>
-
-<!-- Поиск резерваций по столику -->
-<div>
-    <section>
-        <h2>Найти резервации по столику</h2>
-        <form th:action="@{/restaurant/admin/reservations/today}" method="get">
-            <label>Номер столика:
-                <input type="number" name="tableNumber" min="1" required>
-            </label>
-            <button type="submit">Показать</button>
-        </form>
-    </section>
-</div>
-
-<div class="table-cansellation__link">
-    <a th:href="@{/restaurant}">Вернуться на Главную Страницу</a>
+<div class="wrapper">
+    <div class="container">
+        <div class="content-wrapper">
+            <header class="header">
+                <div class="header__inner ">
+                    <div class="header__logo-container">
+                        <img class="header__logo"
+                             src="https://i.postimg.cc/RVXCZhCc/restaurant-logo.png"
+                             alt="restaurant logo">
+                    </div>
+                    <nav class="header__menu">
+                        <ul class="header__menu-list">
+                            <li class="header__menu-item item">
+                                Загрузить меню
+                                <!-- Блок загрузки меню (PDF) -->
+                                <div class="item__load-menu section-form">
+                                    <div class="table-reservation">
+                                        <h2>Загрузить меню (PDF)</h2>
+                                        <form class="form"
+                                              th:action="@{/restaurant/admin/upload-menu}"
+                                              method="post"
+                                              enctype="multipart/form-data">
+                                            <div class="form__data-container">
+                                                <input class="form__input" type="file" name="file"
+                                                       accept="application/pdf" required>
+                                            </div>
+                                            <button class="form__submit-btn menu-btn"
+                                                    type="submit">Загрузить
+                                                меню</button>
+                                        </form>
+                                    </div>
+                                    <!-- Сообщение при загрузке меню удачно или нет -->
+                                    <div th:if="${message}" class="message">
+                                        <p th:text="${message}" class="message__test"></p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="header__menu-item item">
+                                <p>Создать резервацию</p>
+                                <!-- Блок создания резервации -->
+                                <div class="item__reservation-form">
+                                    <div class="section-form">
+                                        <div class="table-reservation">
+                                            <form class="table-reservation__form form"
+                                            th:action="@{/restaurant/admin/reserve}"
+                                            th:object="${reservationForm}"
+                                            method="post">
+                                            <div class="form__data-container">
+                                                <div class="form__group">
+                                                    <label for="name" class="form__label">Имя,
+                                                        Фамилия
+                                                    </label>
+                                                    <input class="form__input" id="name" type="text"
+                                                           th:field="*{customerName}" required>
+                                                </div>
+                                                <div class="form__group">
+                                                    <label for="email"
+                                                           class="form__label">Email</label>
+                                                    <input class="form__input" id="email" type="email"
+                                                           th:field="*{customerEmail}" required>
+                                                </div>
+                                                <div class="form__group">
+                                                    <label for="guestNumber" class="form__label">
+                                                        Количество гостей
+                                                    </label>
+                                                    <input class="form__input" id="guestNumber"
+                                                           type="number"
+                                                           th:field="*{guestNumber}"
+                                                           min="1" required>
+                                                </div>
+                                                <div class="form__group">
+                                                    <label for="startDateTime" class="form__label">
+                                                        Дата и Время начала
+                                                    </label>
+                                                    <input class="form__input" id="startDateTime"
+                                                           type="datetime-local"
+                                                           th:field="*{startDateTime}" required>
+                                                </div>
+                                                <div class="form__group">
+                                                    <label for="endDateTime" class="form__label">
+                                                        Время окончания
+                                                    </label>
+                                                    <input class="form__input" id="endDateTime"
+                                                           type="time"
+                                                           th:field="*{endTime}" required>
+                                                </div>
+                                            </div>
+                                            <button class="form__submit-btn"
+                                                    type="submit">Забронировать</button>
+                                            </form>
+                                        </div>
+                                        <!-- Сообщение при отправке удачно или нет -->
+                                        <div th:if="${message}" class="message">
+                                            <p th:text="${message}" class="message__test"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="header__menu-item">
+                                <p>Отменить резервацию</p>
+                                <!-- Блок удаления резервации -->
+                                <div class="section-form section-form__cansellation">
+                                    <div class="table-cansellation">
+                                        <form class="table-cansellation__form form"
+                                              th:action="@{/restaurant/admin/cancel}" method="post">
+                                            <div class="form__data-container">
+                                                <div class="form__group">
+                                                    <label for="name" class="form__label">Введите код
+                                                        брони
+                                                    </label>
+                                                    <input class="form__input" id="name" type="text"
+                                                           name="reservationCode"
+                                                           placeholder="Введите код из Email"
+                                                           required>
+                                                </div>
+                                            </div>
+                                            <button class="form__submit-btn"
+                                                    type="submit">Отменить</button>
+                                        </form>
+                                    </div>
+                                    <!-- Сообщение при удалении удачно или нет -->
+                                    <div th:if="${message}" class="message">
+                                        <p th:text="${message}" class="message__test"></p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </header>
+            <main class="main">
+                <div class="main-container">
+                    <!-- Поиск резерваций по дате -->
+                    <div class="find-reservation">
+                        <h2 class="title">Найти резервации по дате</h2>
+                        <form class="find-reservation__form"
+                              th:action="@{/restaurant/admin/reservations/confirmed/by-date}"
+                              method="get">
+                            <label class="lable">Дата:
+                                <input type="date" name="date" required>
+                            </label>
+                            <button class="form__submit-btn btn"
+                                    type="submit">Показать</button>
+                        </form>
+                        <!-- Список резерваций по дате -->
+                        <div class="form__data-container data-container">
+                            <section th:if="${allReservations}">
+                                <h2>Резервации на выбранную дату:</h2>
+                                <ul>
+                                    <li th:each="res : ${allReservations}">
+                        <span
+                                th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
+            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
+            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
+                                    </li>
+                                </ul>
+                            </section>
+                        </div>
+                    </div>
+                    <!-- Поиск резерваций по столику -->
+                    <div class="find-reservation">
+                        <h2 class="title">Найти резервации по столику</h2>
+                        <form class="find-reservation__form"
+                              th:action="@{/restaurant/admin/reservations/today}"
+                              method="get">
+                            <label class="lable">Номер столика:
+                                <input type="number" name="tableNumber" min="1" required>
+                            </label>
+                            <button class="form__submit-btn btn-number"
+                                    type="submit">Показать</button>
+                        </form>
+                        <!-- Список резерваций по столику -->
+                        <div class="form__data-container data-container">
+                            <section th:if="${tableReservations}">
+                                <h2>Резервации по столику</h2>
+                                <ul>
+                                    <li th:each="res : ${tableReservations}">
+                        <span
+                                th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
+            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
+            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
+                                    </li>
+                                </ul>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
 </div>
 
 </body>

@@ -1,6 +1,5 @@
 package de.ait.restaurantapp.controller;
 
-
 import de.ait.restaurantapp.dto.ReservationFormDto;
 import de.ait.restaurantapp.exception.NoAvailableTableException;
 import de.ait.restaurantapp.model.Reservation;
@@ -36,12 +35,16 @@ public class AdminPageController {
         this.reservationService = reservationService;
         this.fileService = fileService;
     }
-    @GetMapping
-    public String showAdminPanel(Model model) {
-        model.addAttribute("reservationForm", new ReservationFormDto());
-        return "admin-panel";
+
+    @ModelAttribute("reservationForm")
+    public ReservationFormDto getReservationFormDto() {
+        return new ReservationFormDto();
     }
 
+    @GetMapping("/admin")
+    public String showAdminPanel() {
+        return "admin-panel";
+    }
 
     @PostMapping("/reserve")
     public String createdReservationFromAdmin(@ModelAttribute ReservationFormDto form, Model model) {
@@ -56,8 +59,6 @@ public class AdminPageController {
             model.addAttribute("message", exception.getMessage());
             model.addAttribute("reservationForm", form);
         }
-        // reset the form
-        model.addAttribute("reservationForm", new ReservationFormDto());
         return "admin-panel";
     }
 
@@ -71,7 +72,6 @@ public class AdminPageController {
             model.addAttribute("message", "Reservation Code is not found");
         }
         model.addAttribute("reservationCode", "");
-        model.addAttribute("reservationForm", new ReservationFormDto());
         return "admin-panel";
     }
 
@@ -82,26 +82,21 @@ public class AdminPageController {
             model.addAttribute("message", "No reservations found for table " + tableNumber);
         }
         model.addAttribute("tableReservations", tableReservations);
-        model.addAttribute("reservationForm", new ReservationFormDto());
         return "admin-panel";
     }
 
-//    @GetMapping("/reservations/confirmed/by-date")
-//    public String getReservationsConfirmedByDate(@RequestParam LocalDate date, Model model) {
-//       List<Reservation> reservationsByDate = reservationService.getAllConfirmedReservationByDay(date);
-//        if (reservationsByDate.isEmpty()) {
-//            model.addAttribute("message", "No reservations found for date: " + date);
-//            model.addAttribute("reservationForm", new ReservationFormDto());
-//        }
-//        model.addAttribute("allReservations", reservationsByDate);
-//        return "admin-panel";
-//    }
+    @GetMapping("/reservations/confirmed/by-date")
+    public String getReservationsConfirmedByDate(@RequestParam LocalDate date, Model model) {
+        List<Reservation> reservationsByDate = reservationService.getAllReservationByDay(date);
+        if (reservationsByDate.isEmpty()) {
+            model.addAttribute("message", "No reservations found for date: " + date);
+        }
+        model.addAttribute("allReservations", reservationsByDate);
+        return "admin-panel";
+    }
 
     @PostMapping("/upload-menu")
     public String uploadMenu(@RequestParam("file") MultipartFile file, Model model) {
-        ReservationFormDto form = new ReservationFormDto();
-        model.addAttribute("reservationForm", form);
-
         if (file.isEmpty() || !file.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
             model.addAttribute("message", "Invalid file");
             return "admin-panel";

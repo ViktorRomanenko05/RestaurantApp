@@ -7,12 +7,9 @@ import de.ait.restaurantapp.services.FileService;
 import de.ait.restaurantapp.services.ReservationService;
 import jakarta.mail.MessagingException;
 import org.springframework.http.*;
-import org.springframework.security.access.prepost.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
 
 @Controller
 @RequestMapping("/restaurant")

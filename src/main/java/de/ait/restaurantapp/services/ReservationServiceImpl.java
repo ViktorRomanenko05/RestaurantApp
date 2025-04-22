@@ -200,9 +200,10 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public List<Reservation> getAllReservationByDay(LocalDate day) {
         log.debug("Fetching all reservations by day: {}", day);
-        LocalDate today = LocalDate.now();
-        List<Reservation> reservations = reservationRepo.findAll().stream().filter(r -> r.getStartDateTime().toLocalDate().equals(today)).collect(Collectors.toList());
+        List<Reservation> reservations = reservationRepo.findAll().stream()
+                .filter(r -> r.getStartDateTime().toLocalDate().equals(day)).collect(Collectors.toList());
         log.debug("Found {} reservations by day: {}", reservations.size(), day);
+
         return reservations;
     }
 
