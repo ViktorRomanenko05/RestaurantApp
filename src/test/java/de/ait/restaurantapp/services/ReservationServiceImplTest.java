@@ -22,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -396,5 +397,8 @@ public class ReservationServiceImplTest {
         reservationService.createReservation(afterBasedate);
         List<Reservation> filteredReservations = reservationService.getAllReservationByDay(baseDate);
         assertEquals(2, filteredReservations.size());
+        List<LocalDateTime> foundTime = reservationRepo.findAll().stream().map(reservation -> reservation.getStartDateTime()).toList();
+        assertEquals(baseDate, reservationRepo.findAll().get(0).getStartDateTime().toLocalDate());
+        assertEquals(baseDate, reservationRepo.findAll().get(1).getStartDateTime().toLocalDate());
     }
 }
