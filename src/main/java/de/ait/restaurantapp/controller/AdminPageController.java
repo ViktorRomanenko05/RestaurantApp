@@ -41,7 +41,7 @@ public class AdminPageController {
         return new ReservationFormDto();
     }
 
-    @GetMapping("/admin")
+    @GetMapping()
     public String showAdminPanel() {
         return "admin-panel";
     }
