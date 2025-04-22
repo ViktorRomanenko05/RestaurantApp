@@ -3,6 +3,7 @@ import de.ait.restaurantapp.dto.ReservationFormDto;
 import de.ait.restaurantapp.model.Reservation;
 import jakarta.mail.MessagingException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ReservationService {
@@ -15,4 +16,6 @@ public interface ReservationService {
     boolean cancelReservation(String reservationCode);
 
     List<Reservation> getReservationsForTableToday(Integer tableId);
+
+    public List<Reservation> getAllReservationByDay(LocalDate day);
 }

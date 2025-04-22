@@ -3,6 +3,7 @@ package de.ait.restaurantapp.controller;
 import de.ait.restaurantapp.dto.ReservationFormDto;
 import de.ait.restaurantapp.exception.NoAvailableTableException;
 import de.ait.restaurantapp.model.Reservation;
+import de.ait.restaurantapp.services.FileService;
 import de.ait.restaurantapp.services.ReservationService;
 import jakarta.mail.MessagingException;
 import org.springframework.http.*;
@@ -18,9 +19,11 @@ import java.util.*;
 public class RestaurantPageController {
 
     private final ReservationService reservationService;
+    private final FileService fileService;
 
-    public RestaurantPageController(ReservationService reservationService) {
+    public RestaurantPageController(ReservationService reservationService, FileService fileService) {
         this.reservationService = reservationService;
+        this.fileService = fileService;
     }
 
     @GetMapping
@@ -69,6 +72,15 @@ public class RestaurantPageController {
         }
         model.addAttribute("reservationCode", "");
         return "cancel-form";
+    }
+
+    @GetMapping("/menu")
+    public ResponseEntity<byte[]> downloadMenu() {
+        return fileService.getMenu()
+                .map(file -> ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"")
+                        .body(file.getData()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
 
