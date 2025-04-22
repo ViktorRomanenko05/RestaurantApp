@@ -160,6 +160,9 @@ public class ReservationServiceImpl implements ReservationService {
                 emailClientDto.setTo(saved.getCustomerEmail());
                 emailClientDto.setName(saved.getCustomerName());
                 emailClientDto.setReservationCode(reservationCode);
+                emailClientDto.setStartTime(saved.getStartDateTime());
+                emailClientDto.setEndTime(saved.getEndDateTime());
+                emailClientDto.setGuestCount(saved.getGuestCount());
                 emailService.sendHTMLEmail(emailClientDto);
 
                 return saved;
