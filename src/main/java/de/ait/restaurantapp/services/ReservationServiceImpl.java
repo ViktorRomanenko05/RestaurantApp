@@ -74,10 +74,17 @@ public class ReservationServiceImpl implements ReservationService {
 
         // --- Ограничение: не более одной резервации в один день на один email ---
         LocalDate reservationDate = startDateTime.toLocalDate();
-        boolean alreadyHasBooking = reservationRepo.findAll().stream()
-                .filter(r -> r.getCustomerEmail().equals(form.getCustomerEmail()))
-                .anyMatch(r -> r.getStartDateTime().toLocalDate().isEqual(reservationDate)
-                && r.getReservationStatus().equals(ReservationStatus.CONFIRMED));
+        LocalDateTime startOfDay = reservationDate.atStartOfDay();
+        LocalDateTime endOfDay = reservationDate.plusDays(1).atStartOfDay();
+
+        boolean alreadyHasBooking = !reservationRepo
+                .findByCustomerEmailIgnoreCaseAndReservationStatusAndStartDateTimeBetween(
+                        form.getCustomerEmail(),
+                        ReservationStatus.CONFIRMED,
+                        startOfDay,
+                        endOfDay
+                ).isEmpty();
+
         if (alreadyHasBooking) {
             throw new IllegalArgumentException(
                     "Email " + form.getCustomerEmail() +
