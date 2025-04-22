@@ -28,8 +28,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-
     @Bean
     @Order(2)
     public SecurityFilterChain publicSecurity(HttpSecurity http) throws Exception {
@@ -48,7 +46,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }
-
 
     @Bean
     public UserDetailsService userDetailsService() {
