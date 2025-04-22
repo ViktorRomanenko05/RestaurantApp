@@ -26,6 +26,9 @@ public class EmailService {
         Context context = new Context();
         context.setVariable("name", dto.getName());
         context.setVariable("reservationCode", dto.getReservationCode());
+        context.setVariable("startTime", dto.getStartTime());
+        context.setVariable("endTime", dto.getEndTime());
+        context.setVariable("guestCount", dto.getGuestCount());
 
         String html = templateEngine.process("email-template", context);
 
