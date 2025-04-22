@@ -34,6 +34,13 @@ public interface ReservationRepo extends JpaRepository<Reservation, Long> {
             ReservationStatus reservationStatus
     );
 
+    List<Reservation> findByCustomerEmailIgnoreCaseAndReservationStatusAndStartDateTimeBetween(
+            String customerEmail,
+            ReservationStatus status,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
 
 
     Optional<Reservation> findByReservationCode(String reservationCode);
