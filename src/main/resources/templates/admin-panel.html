@@ -32,7 +32,7 @@
             <label>Email клиента: <input type="email" th:field="*{customerEmail}" required></label><br>
             <label>Количество гостей: <input type="number" th:field="*{guestNumber}" min="1" required></label><br>
             <label>Начало: <input type="datetime-local" th:field="*{startDateTime}" required></label><br>
-            <label>Окончание: <input type="datetime-local" th:field="*{endTime}" required></label><br>
+            <label>Окончание: <input type="time" th:field="*{endTime}" required></label><br>
             <button type="submit">Создать</button>
         </form>
     </section>
@@ -49,31 +49,34 @@
     </section>
 </div>
 
-<!-- Список резерваций по дате -->
+<!-- Поиск резерваций по дате -->
 <div>
-    <section th:if="${allReservations}">
-        <h2>Резервации на выбранную дату</h2>
-        <ul>
-            <li th:each="res : ${allReservations}">
-            <span th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
-            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
-            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
-            </li>
-        </ul>
+    <section>
+        <h2>Найти резервации по дате</h2>
+        <form th:action="@{/restaurant/admin/reservations/confirmed/by-date}" method="get">
+            <label>Дата:
+                <input type="date" name="date" required>
+            </label>
+            <button type="submit">Показать</button>
+        </form>
     </section>
 </div>
-<!-- Список резерваций по столику -->
+
+<!-- Поиск резерваций по столику -->
 <div>
-    <section th:if="${tableReservations}">
-        <h2>Резервации по столику</h2>
-        <ul>
-            <li th:each="res : ${tableReservations}">
-            <span th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
-            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
-            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
-            </li>
-        </ul>
+    <section>
+        <h2>Найти резервации по столику</h2>
+        <form th:action="@{/restaurant/admin/reservations/today}" method="get">
+            <label>Номер столика:
+                <input type="number" name="tableNumber" min="1" required>
+            </label>
+            <button type="submit">Показать</button>
+        </form>
     </section>
+</div>
+
+<div class="table-cansellation__link">
+    <a th:href="@{/restaurant}">Вернуться на Главную Страницу</a>
 </div>
 
 </body>

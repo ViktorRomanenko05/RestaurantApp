@@ -71,6 +71,7 @@ public class AdminPageController {
             model.addAttribute("message", "Reservation Code is not found");
         }
         model.addAttribute("reservationCode", "");
+        model.addAttribute("reservationForm", new ReservationFormDto());
         return "admin-panel";
     }
 
@@ -81,18 +82,20 @@ public class AdminPageController {
             model.addAttribute("message", "No reservations found for table " + tableNumber);
         }
         model.addAttribute("tableReservations", tableReservations);
+        model.addAttribute("reservationForm", new ReservationFormDto());
         return "admin-panel";
     }
 
-    @GetMapping("/reservations/confirmed/by-date")
-    public String getReservationsConfirmedByDate(@RequestParam LocalDate date, Model model) {
-       List<Reservation> reservationsByDate = reservationService.getAllReservationByDay(date);
-        if (reservationsByDate.isEmpty()) {
-            model.addAttribute("message", "No reservations found for date: " + date);
-        }
-        model.addAttribute("allReservations", reservationsByDate);
-        return "admin-panel";
-    }
+//    @GetMapping("/reservations/confirmed/by-date")
+//    public String getReservationsConfirmedByDate(@RequestParam LocalDate date, Model model) {
+//       List<Reservation> reservationsByDate = reservationService.getAllConfirmedReservationByDay(date);
+//        if (reservationsByDate.isEmpty()) {
+//            model.addAttribute("message", "No reservations found for date: " + date);
+//            model.addAttribute("reservationForm", new ReservationFormDto());
+//        }
+//        model.addAttribute("allReservations", reservationsByDate);
+//        return "admin-panel";
+//    }
 
     @PostMapping("/upload-menu")
     public String uploadMenu(@RequestParam("file") MultipartFile file, Model model) {
