@@ -680,9 +680,11 @@
                                 <ul>
                                     <li th:each="res : ${allReservations}">
                         <span
-                                th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
-            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
-            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
+                                th:text="'Код: ' + ${res.reservationCode} +
+                                   ' | Имя: ' + ${res.customerName} +
+                                   ' | Гостей: ' + ${res.guestCount} +
+                                   ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
+                                   ' | Стол №: ' + ${res.restaurantTable.id}"></span>
                                     </li>
                                 </ul>
                             </section>
@@ -707,9 +709,11 @@
                                 <ul>
                                     <li th:each="res : ${tableReservations}">
                         <span
-                                th:text="'Код: ' + ${res.reservationCode} + ' | Имя: ' + ${res.customerName} +
-            ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
-            ' | Стол: ' + ${res.restaurantTable.tableNumber}"></span>
+                                th:text="'Код: ' + ${res.reservationCode} +
+                                   ' | Имя: ' + ${res.customerName} +
+                                   ' | Гостей: ' + ${res.guestCount} +
+                                   ' | Время: ' + ${res.startDateTime} + ' - ' + ${res.endDateTime} +
+                                   ' | Стол №: ' + ${res.restaurantTable.id}"></span>
                                     </li>
                                 </ul>
                             </section>
